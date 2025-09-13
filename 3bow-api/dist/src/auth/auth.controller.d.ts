@@ -2,7 +2,7 @@ import { Response, Request } from "express";
 import { AuthService } from "./auth.service";
 import { RegisterSupportAdminDto } from "./dto/register-support-admin.dto";
 import { LoginDto } from "./dto/login.dto";
-import { UpdateSupportAdminDto } from "./dto/update-support-admin.dto";
+import { UpdateSupportAdminDto } from "src/users/dto/update-support-admin.dto";
 import { UserRole } from "@prisma/client";
 export declare class AuthController {
     private readonly authService;
@@ -51,4 +51,19 @@ export declare class AuthController {
         address: string | null;
         role: import(".prisma/client").$Enums.UserRole;
     }>;
+    startLoginVerify(dto: LoginDto & {
+        next?: string;
+    }, req: Request): Promise<{
+        verifyRequired: boolean;
+        challengeId: string;
+        resendAfterSec: number;
+    }>;
+    resendLoginVerify(challengeId: string): Promise<{
+        ok: boolean;
+        resendAfterSec: number;
+    }>;
+    verifyLogin(body: {
+        challengeId: string;
+        code: string;
+    }, res: Response): Promise<Response<any, Record<string, any>>>;
 }

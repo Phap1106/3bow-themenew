@@ -14,27 +14,25 @@ const common_1 = require("@nestjs/common");
 const passport_1 = require("@nestjs/passport");
 const passport_jwt_1 = require("passport-jwt");
 const prisma_service_1 = require("../prisma/prisma.service");
-function cookieExtractor(req) {
-    var _a, _b;
-    return (_b = (_a = req === null || req === void 0 ? void 0 : req.cookies) === null || _a === void 0 ? void 0 : _a["access_token"]) !== null && _b !== void 0 ? _b : null;
-}
 let JwtStrategy = class JwtStrategy extends (0, passport_1.PassportStrategy)(passport_jwt_1.Strategy) {
     constructor(prisma) {
         super({
-            jwtFromRequest: passport_jwt_1.ExtractJwt.fromExtractors([
-                cookieExtractor,
-                passport_jwt_1.ExtractJwt.fromAuthHeaderAsBearerToken(),
-            ]),
-            ignoreExpiration: false,
+            jwtFromRequest: passport_jwt_1.ExtractJwt.fromAuthHeaderAsBearerToken(),
             secretOrKey: process.env.JWT_SECRET || "dev_secret",
         });
         this.prisma = prisma;
     }
     async validate(payload) {
-        return this.prisma.user.findUnique({
+        const user = await this.prisma.user.findUnique({
             where: { id: payload.sub },
-            select: { id: true, email: true, role: true, firstName: true, lastName: true },
+            select: { id: true, role: true, sessionVersion: true },
         });
+        if (!user)
+            throw new common_1.UnauthorizedException("User deleted");
+        if (user.sessionVersion !== payload.sv) {
+            throw new common_1.UnauthorizedException("Session revoked");
+        }
+        return { id: user.id, role: user.role };
     }
 };
 exports.JwtStrategy = JwtStrategy;

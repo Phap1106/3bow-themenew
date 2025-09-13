@@ -123,7 +123,7 @@ export class ArticlesService {
 
   async findAll(params: ListArticlesDto) {
     const page  = Math.max(1, params.page ?? 1);
-    const limit = Math.min(100, Math.max(1, params.limit ?? 12));
+    const limit = Math.min(100, Math.max(1, params.limit ?? 10));
     const skip  = (page - 1) * limit;
     const q = (params.q ?? "").trim();
 
@@ -173,17 +173,38 @@ export class ArticlesService {
   }
 
   async update(id: string, dto: UpdateArticleDto) {
+    // chuẩn hoá publishedAt (hỗ trợ SA/CH nếu có)
+    let publishedAt: Date | undefined = undefined;
+    if (dto.publishedAt != null) {
+      const iso = toISOFromVNOrISO(String(dto.publishedAt));
+      const d = new Date(iso);
+      if (Number.isNaN(+d)) {
+        throw new BadRequestException('publishedAt phải là ISO 8601 hoặc "dd/MM/yyyy HH:mm SA|CH"');
+      }
+      publishedAt = d;
+    }
+
     try {
-      const { publishedAt, ...rest } = dto as any;
-      return await this.prisma.article.update({
+      const updated = await this.prisma.article.update({
         where: { id },
         data: {
-          ...rest,
-          publishedAt: publishedAt ? new Date(publishedAt) : undefined,
+          title: dto.title,
+          slug: dto.slug,
+          excerpt: dto.excerpt,
+          content: dto.content,
+          author: dto.author,
+          image: dto.image,
+          // chỉ set khi có gửi vào
+          ...(dto.publishedAt != null ? { publishedAt } : {}),
         },
       });
-    } catch {
-      throw new NotFoundException("Article not found");
+      return updated;
+    } catch (e: any) {
+      // slug trùng
+      if (e?.code === 'P2002') throw new BadRequestException('Slug đã tồn tại');
+      // id không tồn tại
+      if (e?.code === 'P2025') throw new NotFoundException('Article not found');
+      throw e;
     }
   }
 
@@ -191,8 +212,19 @@ export class ArticlesService {
     try {
       await this.prisma.article.delete({ where: { id } });
       return { ok: true };
-    } catch {
-      throw new NotFoundException("Article not found");
+    } catch (e: any) {
+      if (e?.code === 'P2025') throw new NotFoundException('Article not found');
+      throw e;
     }
   }
+}
+function toISOFromVNOrISO(s: string) {
+  const m = s.trim().match(/^(\d{2})\/(\d{2})\/(\d{4})\s+(\d{2}):(\d{2})\s*(SA|CH)$/i);
+  if (!m) return s; // không match → coi như ISO
+  let [, dd, mm, yyyy, hh, min, ampm] = m;
+  let H = parseInt(hh, 10);
+  if (/CH/i.test(ampm) && H < 12) H += 12;   // CH = PM
+  if (/SA/i.test(ampm) && H === 12) H = 0;   // SA = AM (12 giờ => 0)
+  const d = new Date(+yyyy, +mm - 1, +dd, H, +min);
+  return d.toISOString();
 }

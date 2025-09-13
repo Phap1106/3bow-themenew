@@ -15,17 +15,39 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.UsersController = void 0;
 const common_1 = require("@nestjs/common");
 const users_service_1 = require("./users.service");
+const update_support_admin_dto_1 = require("./dto/update-support-admin.dto");
 let UsersController = class UsersController {
-    constructor(svc) {
-        this.svc = svc;
+    constructor(usersService) {
+        this.usersService = usersService;
+    }
+    findAllSupport(page, limit, q) {
+        const p = Number.isFinite(Number(page)) ? parseInt(page, 10) : 1;
+        const l = Number.isFinite(Number(limit)) ? parseInt(limit, 10) : 10;
+        return this.usersService.findSupport({ page: p, limit: l, q: q || "" });
     }
     list(q = "", page = "1", limit = "20") {
-        return this.svc.listSupportAdmins(q, Number(page), Number(limit));
+        return this.usersService.listSupportAdmins(q, Number(page), Number(limit));
     }
-    remove(id) { return this.svc.delete(id); }
-    kick(id) { return this.svc.kick(id); }
+    updateSupport(id, dto) {
+        return this.usersService.updateSupportAdmin(id, dto);
+    }
+    remove(id) {
+        return this.usersService.delete(id);
+    }
+    kick(id) {
+        return this.usersService.kick(id);
+    }
 };
 exports.UsersController = UsersController;
+__decorate([
+    (0, common_1.Get)("support"),
+    __param(0, (0, common_1.Query)("page")),
+    __param(1, (0, common_1.Query)("limit")),
+    __param(2, (0, common_1.Query)("q")),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String, String]),
+    __metadata("design:returntype", void 0)
+], UsersController.prototype, "findAllSupport", null);
 __decorate([
     (0, common_1.Get)("support-admins"),
     __param(0, (0, common_1.Query)("q")),
@@ -35,6 +57,14 @@ __decorate([
     __metadata("design:paramtypes", [Object, Object, Object]),
     __metadata("design:returntype", void 0)
 ], UsersController.prototype, "list", null);
+__decorate([
+    (0, common_1.Patch)("support-admins/:id"),
+    __param(0, (0, common_1.Param)("id")),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, update_support_admin_dto_1.UpdateSupportAdminDto]),
+    __metadata("design:returntype", void 0)
+], UsersController.prototype, "updateSupport", null);
 __decorate([
     (0, common_1.Delete)(":id"),
     __param(0, (0, common_1.Param)("id")),

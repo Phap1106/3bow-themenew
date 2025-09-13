@@ -1,4 +1,4 @@
-// // src/auth/auth.module.ts
+
 // import { Module } from '@nestjs/common';
 // import { JwtModule } from '@nestjs/jwt';
 // import { AuthService } from './auth.service';
@@ -20,7 +20,6 @@
 // })
 // export class AuthModule {}
 
-
 // src/auth/auth.module.ts
 import { Module } from "@nestjs/common";
 import { JwtModule } from "@nestjs/jwt";
@@ -28,6 +27,7 @@ import { AuthService } from "./auth.service";
 import { AuthController } from "./auth.controller";
 import { JwtStrategy } from "./jwt.strategy";
 import { PrismaService } from "../prisma/prisma.service";
+import { MailerModule } from "../mailer/mailer.module";
 
 @Module({
   imports: [
@@ -36,6 +36,7 @@ import { PrismaService } from "../prisma/prisma.service";
       secret: process.env.JWT_SECRET || "dev_secret",
       signOptions: { expiresIn: "7d" },
     }),
+    MailerModule,
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy, PrismaService],

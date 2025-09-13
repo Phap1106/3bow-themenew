@@ -8,17 +8,6 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-var __rest = (this && this.__rest) || function (s, e) {
-    var t = {};
-    for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
-        t[p] = s[p];
-    if (s != null && typeof Object.getOwnPropertySymbols === "function")
-        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) {
-            if (e.indexOf(p[i]) < 0 && Object.prototype.propertyIsEnumerable.call(s, p[i]))
-                t[p[i]] = s[p[i]];
-        }
-    return t;
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ArticlesService = void 0;
 const common_1 = require("@nestjs/common");
@@ -46,7 +35,7 @@ let ArticlesService = class ArticlesService {
     async findAll(params) {
         var _a, _b, _c;
         const page = Math.max(1, (_a = params.page) !== null && _a !== void 0 ? _a : 1);
-        const limit = Math.min(100, Math.max(1, (_b = params.limit) !== null && _b !== void 0 ? _b : 12));
+        const limit = Math.min(100, Math.max(1, (_b = params.limit) !== null && _b !== void 0 ? _b : 10));
         const skip = (page - 1) * limit;
         const q = ((_c = params.q) !== null && _c !== void 0 ? _c : "").trim();
         const where = q
@@ -90,15 +79,28 @@ let ArticlesService = class ArticlesService {
         return article;
     }
     async update(id, dto) {
-        try {
-            const _a = dto, { publishedAt } = _a, rest = __rest(_a, ["publishedAt"]);
-            return await this.prisma.article.update({
-                where: { id },
-                data: Object.assign(Object.assign({}, rest), { publishedAt: publishedAt ? new Date(publishedAt) : undefined }),
-            });
+        let publishedAt = undefined;
+        if (dto.publishedAt != null) {
+            const iso = toISOFromVNOrISO(String(dto.publishedAt));
+            const d = new Date(iso);
+            if (Number.isNaN(+d)) {
+                throw new common_1.BadRequestException('publishedAt phải là ISO 8601 hoặc "dd/MM/yyyy HH:mm SA|CH"');
+            }
+            publishedAt = d;
         }
-        catch (_b) {
-            throw new common_1.NotFoundException("Article not found");
+        try {
+            const updated = await this.prisma.article.update({
+                where: { id },
+                data: Object.assign({ title: dto.title, slug: dto.slug, excerpt: dto.excerpt, content: dto.content, author: dto.author, image: dto.image }, (dto.publishedAt != null ? { publishedAt } : {})),
+            });
+            return updated;
+        }
+        catch (e) {
+            if ((e === null || e === void 0 ? void 0 : e.code) === 'P2002')
+                throw new common_1.BadRequestException('Slug đã tồn tại');
+            if ((e === null || e === void 0 ? void 0 : e.code) === 'P2025')
+                throw new common_1.NotFoundException('Article not found');
+            throw e;
         }
     }
     async remove(id) {
@@ -106,8 +108,10 @@ let ArticlesService = class ArticlesService {
             await this.prisma.article.delete({ where: { id } });
             return { ok: true };
         }
-        catch (_a) {
-            throw new common_1.NotFoundException("Article not found");
+        catch (e) {
+            if ((e === null || e === void 0 ? void 0 : e.code) === 'P2025')
+                throw new common_1.NotFoundException('Article not found');
+            throw e;
         }
     }
 };
@@ -116,4 +120,17 @@ exports.ArticlesService = ArticlesService = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [prisma_service_1.PrismaService])
 ], ArticlesService);
+function toISOFromVNOrISO(s) {
+    const m = s.trim().match(/^(\d{2})\/(\d{2})\/(\d{4})\s+(\d{2}):(\d{2})\s*(SA|CH)$/i);
+    if (!m)
+        return s;
+    let [, dd, mm, yyyy, hh, min, ampm] = m;
+    let H = parseInt(hh, 10);
+    if (/CH/i.test(ampm) && H < 12)
+        H += 12;
+    if (/SA/i.test(ampm) && H === 12)
+        H = 0;
+    const d = new Date(+yyyy, +mm - 1, +dd, H, +min);
+    return d.toISOString();
+}
 //# sourceMappingURL=articles.service.js.map

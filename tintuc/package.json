@@ -1,0 +1,51 @@
+{
+  "name": "tintuc",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "lint:fix": "eslint --fix"
+  },
+  "dependencies": {
+    "@ai-sdk/openai": "^2.0.23",
+    "@hookform/resolvers": "^5.2.1",
+    "ai": "^5.0.30",
+    "clsx": "^2.1.1",
+    "embla-carousel-react": "^8.6.0",
+    "framer-motion": "^12.23.12",
+    "lucide-react": "^0.543.0",
+    "next": "^15.5.2",
+    "openai": "^5.19.1",
+    "qwen-ai-provider": "^0.1.1",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
+    "react-hook-form": "^7.62.0",
+    "react-markdown": "^10.1.0",
+    "rehype-autolink-headings": "^7.1.0",
+    "rehype-highlight": "^7.0.2",
+    "rehype-slug": "^6.0.0",
+    "remark-breaks": "^4.0.0",
+    "remark-gfm": "^4.0.1",
+    "sonner": "^2.0.7",
+    "swiper": "^11.2.10",
+    "tailwind-merge": "^3.3.1",
+    "zod": "^4.1.5"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3",
+    "@tailwindcss/postcss": "^4",
+    "@tailwindcss/typography": "^0.5.16",
+    "@types/node": "^24.3.1",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "autoprefixer": "^10.4.21",
+    "eslint": "^9",
+    "eslint-config-next": "15.5.2",
+    "postcss": "^8.5.6",
+    "tailwindcss": "3.4.13",
+    "typescript": "^5.9.2"
+  }
+}

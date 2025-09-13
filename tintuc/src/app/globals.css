@@ -1,0 +1,43 @@
+/* app/globals.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+/* containers & utilities */
+.container-max{ @apply px-4 mx-auto max-w-7xl; }
+
+/* input mặc định */
+.input{
+  @apply w-full px-3 text-sm transition bg-white border rounded-lg outline-none h-11 border-zinc-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20;
+}
+/* input có lỗi */
+.input-invalid{
+  @apply border-red-500 focus:border-red-500 focus:ring-red-500/20;
+}
+
+/* nút bấm */
+.btn{ @apply inline-flex items-center justify-center rounded-lg px-5 py-2.5 font-medium transition; }
+.btn-raise{ @apply shadow-sm hover:shadow-md active:shadow; }
+.btn-primary{ @apply bg-[#1677ff] text-white hover:bg-[#0b5bd3]; }
+.btn-success{ @apply text-white bg-emerald-600 hover:bg-emerald-600/90; }
+.btn-secondary{
+  @apply bg-white border border-zinc-300 hover:bg-violet-50 hover:text-violet-700 hover:border-violet-300;
+}
+  .input {
+    @apply w-full px-3 text-sm transition bg-white border rounded-lg outline-none h-11 border-zinc-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20;
+  }
+  .input-icon {              /* thêm khoảng trống bên trái cho icon */
+    @apply pl-10;
+  }
+  :root {
+  /* tăng độ mịn text */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* heading mặc định dùng font heading (nếu bạn muốn áp toàn cục) */
+h1, h2, h3, .font-heading {
+  font-family: var(--font-heading), var(--font-sans), system-ui, sans-serif;
+  letter-spacing: -0.02em;
+}

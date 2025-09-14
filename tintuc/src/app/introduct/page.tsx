@@ -133,7 +133,7 @@ function Timeline() {
       title: "Kiến tạo giá trị bền vững",
       desc:
         "Mở rộng đội ngũ, giữ tinh thần gọn gàng. Không chạy theo ồn ào, tập trung vào kết quả có thể chạm tay: lead chất lượng, doanh thu thực.",
-      img: "https://images.unsplash.com/photo-1531539274891-27f28c6c0d59?q=80&w=1400&auto=format&fit=crop",
+      img: "https://i.pinimg.com/1200x/3b/0d/89/3b0d890c9368ffaba6cfa678a91c2501.jpg",
     },
   ] as const;
 

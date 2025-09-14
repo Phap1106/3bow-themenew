@@ -7,6 +7,8 @@ import { getArticles, getArticleBySlug } from "@/lib/newsApi";
 import Markdown from "@/components/Markdown";
 import { Calendar, User, ChevronRight, ArrowLeft, Clock } from "lucide-react";
 export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 const FALLBACK_IMG =
   "https://dummyimage.com/1200x630/e5e7eb/9ca3af&text=3BOW+News";
 

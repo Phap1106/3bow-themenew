@@ -96,23 +96,23 @@ const NAV_GROUPS: NavGroup[] = [
       // },
     ],
   },
-  {
-    label: "Đào tạo",
-    color: "text-indigo-600",
-    items: [
-      { href: "/training/seo", label: "Khóa học SEO", icon: GraduationCap },
-      {
-        href: "/training/google-ads",
-        label: "Khóa học Google Ads",
-        icon: LineChart,
-      },
-      {
-        href: "/training/content-seo",
-        label: "Khóa học Content SEO",
-        icon: BookOpenText,
-      },
-    ],
-  },
+  // {
+  //   label: "Đào tạo",
+  //   color: "text-indigo-600",
+  //   items: [
+  //     { href: "/training/seo", label: "Khóa học SEO", icon: GraduationCap },
+  //     {
+  //       href: "/training/google-ads",
+  //       label: "Khóa học Google Ads",
+  //       icon: LineChart,
+  //     },
+  //     {
+  //       href: "/training/content-seo",
+  //       label: "Khóa học Content SEO",
+  //       icon: BookOpenText,
+  //     },
+  //   ],
+  // },
   {
     label: "Tài nguyên",
     color: "text-emerald-600",
@@ -475,8 +475,8 @@ export function Footer() {
               title="Giới thiệu"
               items={[
                 { href: "/introduct", label: "Về 3BOW" },
-                { href: "/about/ip", label: "Mô hình độc quyền" },
-                { href: "/about/team", label: "Đội ngũ nhân sự" },
+                { href: "#", label: "Mô hình độc quyền" },
+                { href: "#", label: "Đội ngũ nhân sự" },
                 // { href: "/sitemap", label: "Sơ đồ trang" },
               ]}
             />

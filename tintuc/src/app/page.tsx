@@ -420,11 +420,11 @@ function Services() {
         "Kỷ luật thương hiệu",
       ],
     },
-    {
-      icon: LineChart,
-      title: "Đào tạo",
-      pts: ["SEO", "Google Ads", "Content SEO"],
-    },
+    // {
+    //   icon: LineChart,
+    //   title: "Đào tạo",
+    //   pts: ["SEO", "Google Ads", "Content SEO"],
+    // },
   ];
   return (
     <section className="py-14">

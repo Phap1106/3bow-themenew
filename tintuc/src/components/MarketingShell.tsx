@@ -115,7 +115,7 @@ function Header() {
         <nav className="items-center hidden gap-6 md:flex text-zinc-700">
           <Dropdown title="Giới thiệu" items={NAV.gioiThieu} />
           <Dropdown title="Dịch vụ" items={NAV.dichVu} />
-          <Dropdown title="Đào tạo" items={NAV.daoTao} />
+          {/* <Dropdown title="Đào tạo" items={NAV.daoTao} /> */}
           <Dropdown title="Tài nguyên" items={NAV.taiNguyen} />
           <Link href="/careers" className="font-medium hover:text-zinc-900">
             Tuyển dụng

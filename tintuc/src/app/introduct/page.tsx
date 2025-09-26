@@ -2,7 +2,7 @@
 "use client";
 
 import Image from "next/image";
-import { ReactNode } from "react";
+import { ReactNode, useMemo, useState } from "react";
 import SiteShell from "@/components/siteHeaderFooter";
 import {
   Quote,
@@ -22,6 +22,25 @@ const H2 = ({ children }: { children: ReactNode }) => (
   </h2>
 );
 
+/* ====== hero presets (xanh / cam / vàng) ====== */
+const HERO_PRESETS = {
+  blue: {
+    img: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?q=80&w=2400&auto=format&fit=crop",
+    tintFrom: "from-sky-500/60",
+    tintVia: "via-cyan-400/40",
+  },
+  orange: {
+    img: "https://images.unsplash.com/photo-1475727946784-2890c8fdb9ef?q=80&w=2400&auto=format&fit=crop",
+    tintFrom: "from-orange-500/60",
+    tintVia: "via-amber-400/40",
+  },
+  yellow: {
+    img: "https://images.unsplash.com/photo-1523580846011-d3a5bc25702b?q=80&w=2400&auto=format&fit=crop",
+    tintFrom: "from-amber-500/60",
+    tintVia: "via-yellow-400/40",
+  },
+} as const;
+
 export default function Page() {
   return (
     <SiteShell>
@@ -37,30 +56,62 @@ export default function Page() {
 
 /* ================= HERO ================= */
 function HeroIntro() {
+  const [tone, setTone] = useState<keyof typeof HERO_PRESETS>("blue");
+  const preset = useMemo(() => HERO_PRESETS[tone], [tone]);
+
   return (
     <section className="relative">
       <div className="relative h-[56vh] min-h-[420px] w-full overflow-hidden">
         <Image
-          src="https://images.unsplash.com/photo-1517048676732-d65bc937f952?q=80&w=2000&auto=format&fit=crop"
-          alt="Khoảnh khắc tập thể 3BOW"
+          src={preset.img}
+          alt="3BOW • Hero"
           fill
           priority
           className="object-cover"
           sizes="100vw"
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-white/90 via-white/45 to-white/0" />
+
+        {/* Lớp tối sát mép trên để header chữ trắng luôn rõ */}
+        <div className="absolute inset-x-0 top-0 h-24 md:h-28 bg-black/40" />
+
+        {/* Lớp tint theo tông màu + fade xuống dưới cho hero nổi bật nhưng không gắt */}
+        <div
+          className={[
+            "absolute inset-0 bg-gradient-to-b",
+            preset.tintFrom,
+            preset.tintVia,
+            "to-transparent",
+          ].join(" ")}
+        />
+
+        {/* nội dung hero */}
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="px-4 text-center">
-            <p className="text-[12px] md:text-sm text-zinc-700">
+            <p className="text-[12px] md:text-sm text-white/90 drop-shadow">
               Một tập thể nhỏ, tin vào sức mạnh của kỷ luật – dữ liệu – sự tử tế
             </p>
-            <h1 className="mt-2 text-3xl font-extrabold leading-tight tracking-wide md:text-5xl text-zinc-900/90">
-              3BOW <span className="text-violet-600">|</span> CÂU CHUYỆN CỦA CHÚNG TÔI
+            <h1 className="mt-2 text-3xl font-extrabold leading-tight tracking-wide text-white md:text-5xl drop-shadow-md">
+              3BOW <span className="text-white/90">|</span> CÂU CHUYỆN CỦA CHÚNG TÔI
             </h1>
-            <p className="max-w-3xl mx-auto mt-3 text-zinc-700">
+            <p className="max-w-3xl mx-auto mt-3 text-white/90 drop-shadow">
               3BOW sinh ra không để chạy theo “ồn ào”, mà để làm kỹ, làm đúng, và
               bền bỉ mang lại những giá trị đo đếm được cho khách hàng.
             </p>
+
+            {/* nút đổi tông nhanh */}
+            <div className="flex items-center justify-center gap-2 mt-4">
+              {(["blue", "orange", "yellow"] as const).map((k) => (
+                <button
+                  key={k}
+                  onClick={() => setTone(k)}
+                  className={`h-7 rounded-full px-3 text-xs font-medium text-white/95 shadow ${
+                    tone === k ? "bg-black/50" : "bg-black/30 hover:bg-black/40"
+                  }`}
+                >
+                  {k === "blue" ? "Xanh" : k === "orange" ? "Cam" : "Vàng"}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       </div>
@@ -92,17 +143,13 @@ function OurStory() {
               Hình thành từ những dự án nhỏ, lớn lên bằng sự tin cậy
             </h3>
             <p className="mt-3 text-zinc-700">
-              3BOW bắt đầu từ một nhóm làm nghề yêu sự “gọn gàng”: quy trình
-              rõ ràng, đo lường minh bạch và tinh thần chịu trách nhiệm tới cùng.
-              Những năm đầu, chúng tôi nhận các dự án nhỏ, lắng nghe kỹ, làm kỹ
-              và cải tiến mỗi ngày. Từng báo cáo, từng chỉ số đều được chăm chút—
+              3BOW bắt đầu từ một nhóm làm nghề yêu sự “gọn gàng”: quy trình rõ ràng, đo lường minh bạch và tinh thần chịu trách nhiệm tới cùng.
+              Những năm đầu, chúng tôi nhận các dự án nhỏ, lắng nghe kỹ, làm kỹ và cải tiến mỗi ngày. Từng báo cáo, từng chỉ số đều được chăm chút—
               không phải để phô trương, mà để chính mình tin vào những gì đang làm.
             </p>
             <p className="mt-3 text-zinc-700">
-              Chúng tôi không chạy theo khẩu hiệu. 3BOW chọn cách trưởng thành
-              tự nhiên: học hỏi từ thất bại, gìn giữ điều đúng đắn, làm điều nên
-              làm. Bởi sau cùng, điều khiến khách hàng ở lại không phải là lời hứa,
-              mà là cảm giác an tâm khi “mọi thứ đang được nắm chắc”.
+              Chúng tôi không chạy theo khẩu hiệu. 3BOW chọn cách trưởng thành tự nhiên: học hỏi từ thất bại, gìn giữ điều đúng đắn, làm điều nên làm.
+              Bởi sau cùng, điều khiến khách hàng ở lại không phải là lời hứa, mà là cảm giác an tâm khi “mọi thứ đang được nắm chắc”.
             </p>
           </div>
         </div>
@@ -142,10 +189,10 @@ function Timeline() {
       <div className="container-max">
         <H2>HÀNH TRÌNH HÌNH THÀNH</H2>
         <div className="grid max-w-5xl gap-5 mx-auto mt-8">
-          {data.map((t, i) => (
+          {data.map((t) => (
             <div
               key={t.year}
-              className="group relative overflow-hidden rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-violet-200 hover:shadow-md"
+              className="group relative overflow-hidden rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-amber-200 hover:shadow-md"
             >
               <div className="grid gap-4 md:grid-cols-[160px_1fr]">
                 <div className="relative w-full overflow-hidden h-28 rounded-xl ring-1 ring-zinc-200">
@@ -158,13 +205,13 @@ function Timeline() {
                   />
                 </div>
                 <div>
-                  <div className="text-sm font-semibold text-violet-700">{t.year}</div>
+                  <div className="text-sm font-semibold text-sky-700">{t.year}</div>
                   <div className="mt-1 text-lg font-semibold">{t.title}</div>
                   <p className="mt-1 text-sm text-zinc-600">{t.desc}</p>
                 </div>
               </div>
-              <span className="absolute w-20 h-20 transition rounded-full opacity-0 pointer-events-none -right-6 -top-6 bg-violet-100/40 group-hover:opacity-100" />
-              <span className="absolute w-16 h-16 transition rounded-full opacity-0 pointer-events-none -bottom-6 -left-6 bg-amber-100/40 group-hover:opacity-100" />
+              <span className="absolute w-20 h-20 transition rounded-full opacity-0 pointer-events-none -right-6 -top-6 bg-sky-100/50 group-hover:opacity-100" />
+              <span className="absolute w-16 h-16 transition rounded-full opacity-0 pointer-events-none -bottom-6 -left-6 bg-amber-100/50 group-hover:opacity-100" />
             </div>
           ))}
         </div>
@@ -208,7 +255,7 @@ function CeoBio() {
 
             <div className="grid gap-2 mt-4 text-sm text-zinc-700">
               <p className="flex items-start gap-2">
-                <Quote className="w-4 h-4 mt-1 text-violet-600" />
+                <Quote className="w-4 h-4 mt-1 text-sky-600" />
                 “Sự sáng tạo giúp ta đi nhanh, kỷ luật giúp ta đi xa. Hiệu quả thật
                 sự nằm ở điểm giao nhau.”
               </p>
@@ -280,14 +327,14 @@ function Values() {
           {list.map((v) => (
             <div
               key={v.title}
-              className="p-6 transition-all bg-white border shadow-sm group rounded-3xl border-zinc-200 hover:-translate-y-1 hover:border-violet-200 hover:shadow-lg"
+              className="p-6 transition-all bg-white border shadow-sm group rounded-3xl border-zinc-200 hover:-translate-y-1 hover:border-sky-200 hover:shadow-lg"
             >
-              <div className="grid w-10 h-10 rounded-full place-items-center bg-violet-50 text-violet-700">
+              <div className="grid w-10 h-10 rounded-full place-items-center bg-sky-50 text-sky-700">
                 {v.icon}
               </div>
               <h3 className="mt-3 text-lg font-semibold">{v.title}</h3>
               <p className="mt-2 text-sm text-zinc-600">{v.desc}</p>
-              <div className="mt-4 h-0.5 w-0 bg-violet-500 transition-all duration-300 group-hover:w-1/2" />
+              <div className="mt-4 h-0.5 w-0 bg-amber-500 transition-all duration-300 group-hover:w-1/2" />
             </div>
           ))}
         </div>

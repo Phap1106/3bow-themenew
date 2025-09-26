@@ -1,11 +1,13 @@
-import { Module } from "@nestjs/common";
-import { LeadsController } from "./leads.controller";
-import { LeadsService } from "./leads.service";
-import { PrismaService } from "../prisma/prisma.service";
+import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { LeadsController } from './leads.controller';
+import { LeadsService } from './leads.service';
+import { Lead } from './lead.entity';
 
 @Module({
+  imports: [TypeOrmModule.forFeature([Lead])],
   controllers: [LeadsController],
-  providers: [LeadsService, PrismaService],
+  providers: [LeadsService],
   exports: [LeadsService],
 })
 export class LeadsModule {}

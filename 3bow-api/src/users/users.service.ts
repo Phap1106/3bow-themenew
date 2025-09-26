@@ -131,46 +131,41 @@
 
 
 
-
-
-
 import {
-  Injectable,
   BadRequestException,
+  Injectable,
   NotFoundException,
-} from "@nestjs/common";
-import { PrismaService } from "../prisma/prisma.service";
-import { Prisma, UserRole } from "@prisma/client";
-import * as bcrypt from "bcryptjs";
-import { UpdateSupportAdminDto } from "./dto/update-support-admin.dto";
+} from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { ILike, Repository } from 'typeorm';
+import * as bcrypt from 'bcryptjs';
+import { UpdateSupportAdminDto } from './dto/update-support-admin.dto';
+import { User } from './user.entity';
+import { UserRole } from 'src/common/enums';
 
 @Injectable()
 export class UsersService {
-  constructor(private prisma: PrismaService) {}
+  constructor(@InjectRepository(User) private repo: Repository<User>) {}
 
   async findSupport(params: { page?: number; limit?: number; q?: string }) {
     const page = Math.max(1, params.page ?? 1);
     const limit = Math.min(100, Math.max(1, params.limit ?? 10));
-    const q = (params.q ?? "").trim();
+    const q = (params.q ?? '').trim();
 
-    const where: Prisma.UserWhereInput = {
-      role: UserRole.SUPPORT_ADMIN,
-      ...(q
-        ? {
-            OR: [
-              { email: { contains: q, mode: "insensitive" } },
-              { firstName: { contains: q, mode: "insensitive" } },
-              { lastName: { contains: q, mode: "insensitive" } },
-              { phone: { contains: q, mode: "insensitive" } },
-            ],
-          }
-        : {}),
-    };
-
-    const [items, total] = await this.prisma.$transaction([
-      this.prisma.user.findMany({
-        where,
-        orderBy: { createdAt: "desc" },
+    const where: any = { role: UserRole.SUPPORT_ADMIN };
+    if (q) {
+      where['email'] = ILike(`%${q}%`);
+      // OR cho firstName/lastName/phone
+      // TypeORM where OR cách 2: truyền mảng
+      const wheres = [
+        { role: UserRole.SUPPORT_ADMIN, email: ILike(`%${q}%`) },
+        { role: UserRole.SUPPORT_ADMIN, firstName: ILike(`%${q}%`) },
+        { role: UserRole.SUPPORT_ADMIN, lastName: ILike(`%${q}%`) },
+        { role: UserRole.SUPPORT_ADMIN, phone: ILike(`%${q}%`) },
+      ];
+      const [items, total] = await this.repo.findAndCount({
+        where: wheres,
+        order: { createdAt: 'DESC' },
         skip: (page - 1) * limit,
         take: limit,
         select: {
@@ -181,42 +176,64 @@ export class UsersService {
           phone: true,
           role: true,
           createdAt: true,
+          passwordHash: false,
+          sessionVersion: false,
+          updatedAt: false,
         },
-      }),
-      this.prisma.user.count({ where }),
-    ]);
+      });
+      return { items, total, page, limit };
+    }
+
+    const [items, total] = await this.repo.findAndCount({
+      where,
+      order: { createdAt: 'DESC' },
+      skip: (page - 1) * limit,
+      take: limit,
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        phone: true,
+        role: true,
+        createdAt: true,
+        passwordHash: false,
+        sessionVersion: false,
+        updatedAt: false,
+      },
+    });
 
     return { items, total, page, limit };
   }
 
-  listSupportAdmins(q = "", page = 1, limit = 20) {
+  listSupportAdmins(q = '', page = 1, limit = 20) {
     return this.findSupport({ q, page, limit });
   }
 
   async updateSupportAdmin(id: string, dto: UpdateSupportAdminDto) {
-    const u = await this.prisma.user.findUnique({
+    const u = await this.repo.findOne({
       where: { id },
-      select: { id: true, role: true },
+      select: { id: true, role: true, sessionVersion: true },
     });
-    if (!u) throw new NotFoundException("User không tồn tại");
+    if (!u) throw new NotFoundException('User không tồn tại');
     if (u.role !== UserRole.SUPPORT_ADMIN)
-      throw new BadRequestException("Chỉ cập nhật Support Admin");
+      throw new BadRequestException('Chỉ cập nhật Support Admin');
 
-    const data: Prisma.UserUpdateInput = {
+    const data: Partial<User> = {
       firstName: dto.firstName ?? undefined,
       lastName: dto.lastName ?? undefined,
       phone: dto.phone ?? undefined,
-     // address: dto.address ?? undefined,
     };
 
     if (dto.password && dto.password.length >= 6) {
-      (data as any).password = await bcrypt.hash(dto.password, 10);
-      (data as any).sessionVersion = { increment: 1 };
+      (data as any).passwordHash = await bcrypt.hash(dto.password, 10);
+      (data as any).sessionVersion = (u.sessionVersion || 0) + 1;
     }
 
-    return this.prisma.user.update({
+    await this.repo.update({ id }, data);
+
+    const updated = await this.repo.findOne({
       where: { id },
-      data,
       select: {
         id: true,
         email: true,
@@ -227,23 +244,24 @@ export class UsersService {
         createdAt: true,
       },
     });
+    return updated!;
   }
 
   async kick(id: string) {
-    return this.prisma.user.update({
+    const u = await this.repo.findOne({
       where: { id },
-      data: { sessionVersion: { increment: 1 } } as any,
-      select: { id: true },
+      select: { sessionVersion: true },
     });
+    if (!u) throw new NotFoundException('User không tồn tại');
+    await this.repo.update({ id }, { sessionVersion: (u.sessionVersion || 0) + 1 });
+    return { id };
   }
 
   async delete(id: string) {
-    await this.prisma.user
-      .update({
-        where: { id },
-        data: { sessionVersion: { increment: 1 } } as any,
-      })
-      .catch(() => {});
-    return this.prisma.user.delete({ where: { id } });
+    try {
+      await this.kick(id);
+    } catch {}
+    await this.repo.delete({ id });
+    return { ok: true };
   }
 }

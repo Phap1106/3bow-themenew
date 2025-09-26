@@ -1,4 +1,4 @@
-import { IsOptional, IsString, MinLength } from "class-validator";
+import { IsOptional, IsString, MinLength } from 'class-validator';
 
 export class UpdateSupportAdminDto {
   @IsOptional() @IsString() firstName?: string;
@@ -6,7 +6,8 @@ export class UpdateSupportAdminDto {
   @IsOptional() @IsString() phone?: string;
   @IsOptional() @IsString() address?: string;
 
-  // Cho phép đổi mật khẩu
-  @IsOptional() @IsString() @MinLength(6)
+  @IsOptional()
+  @IsString()
+  @MinLength(6, { message: 'Mật khẩu tối thiểu 6 ký tự' })
   password?: string;
 }

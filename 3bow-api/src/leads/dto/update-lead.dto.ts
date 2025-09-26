@@ -1,5 +1,6 @@
-import { IsEnum, IsOptional, IsString } from "class-validator";
-import { LeadStatus } from "@prisma/client";
+//src/leads/dto/update-lead.dto.ts
+import { IsEnum, IsOptional, IsString } from 'class-validator';
+import { LeadStatus } from '../enums';
 
 export class UpdateLeadDto {
   @IsOptional()

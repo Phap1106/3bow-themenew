@@ -1,3 +1,4 @@
+//src/mailer/mailer.service.ts
 import { Injectable } from '@nestjs/common';
 
 // Shim CJS/ESM cho nodemailer

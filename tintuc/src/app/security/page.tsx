@@ -1,275 +1,265 @@
-// src/app/privacy/page.tsx
+// src/app/security/page.tsx
 "use client";
 
-import Image from "next/image";
+import * as React from "react";
 import SiteShell from "@/components/siteHeaderFooter";
 import {
-  ShieldCheck,
-  Lock,
-  FileText,
-  Database,
-  KeyRound,
-  EyeOff,
-  UserCheck,
-  History,
-  Server,
-  Globe,
-  ClipboardCheck,
-  FileSpreadsheet,
-  Receipt,
-  Ban,
-  Shield,
+  ShieldCheck, Lock, KeySquare, FileText, UserCheck, Database,
+  Server, Network, Bug, BellRing, Clock4, ClipboardCheck, Globe2,
+  CheckCircle2, Link2, FileKey2, MailCheck, Repeat2, BookOpenText
 } from "lucide-react";
-import { ReactNode } from "react";
 
-/* ---------- Helpers ---------- */
-const H2 = ({ children }: { children: ReactNode }) => (
-  <h2 className="text-3xl font-extrabold tracking-tight text-center md:text-4xl">
-    {children}
-  </h2>
+const H2 = ({ children }: { children: React.ReactNode }) => (
+  <h2 className="text-3xl font-extrabold tracking-tight md:text-4xl">{children}</h2>
+);
+const Section = ({ children, className = "" }: React.PropsWithChildren<{ className?: string }>) => (
+  <section className={`py-12 md:py-16 ${className}`}>{children}</section>
 );
 
-export default function PrivacyPage() {
+export default function SecurityPage() {
   return (
     <SiteShell>
-      <Hero />
-      <PolicyList />
-      <AbsoluteRules />
-      <InvoiceCommit />
-      <ContactNote />
+      {/* ===== HERO ===== */}
+      <section className="relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-b from-sky-700 via-sky-600 to-sky-800" />
+        <div className="absolute inset-x-0 -top-32 h-64 opacity-30 [background:radial-gradient(600px_200px_at_50%_120px,white,transparent)]" />
+        <div className="relative max-w-6xl px-4 pt-24 pb-16 mx-auto text-white md:pt-28">
+          <div className="max-w-3xl pt-8">
+            <p className="mb-2 text-xs font-semibold tracking-wider uppercase text-white/80">3BOW · Security & Compliance</p>
+            <h1 className="text-4xl font-extrabold leading-tight md:text-5xl">
+              Quy định hợp tác & Chính sách bảo mật
+            </h1>
+            <p className="mt-4 text-white/90 md:text-lg">
+              Mục tiêu của 3BOW là bảo vệ dữ liệu và quyền riêng tư của khách hàng ở mức cao nhất,
+              đồng thời đảm bảo tính sẵn sàng, toàn vẹn và minh bạch trong mọi hoạt động.
+            </p>
+            <div className="flex flex-wrap gap-3 mt-6">
+              <Badge icon={<ShieldCheck className="w-4 h-4" />} text="Defense-in-Depth" />
+              <Badge icon={<Lock className="w-4 h-4" />} text="Encryption-by-Default" />
+              <Badge icon={<ClipboardCheck className="w-4 h-4" />} text="Audit & Traceability" />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ===== NGUYÊN TẮC HỢP TÁC ===== */}
+      <Section className="bg-white">
+        <div className="max-w-6xl px-4 mx-auto">
+          <H2>Nguyên tắc khi hợp tác với 3BOW</H2>
+          <p className="mt-3 text-gray-600">
+            Những nguyên tắc cốt lõi giúp hai bên làm việc hiệu quả, minh bạch và an toàn.
+          </p>
+
+          <div className="grid gap-4 mt-8 md:grid-cols-3">
+            <Card title="Hợp đồng & NDA" icon={FileKey2}
+              desc="Ký Hợp đồng dịch vụ (MSA/SOW) và NDA ràng buộc bảo mật trước khi truy cập dữ liệu." />
+            <Card title="Ít quyền nhất (Least-Privilege)" icon={KeySquare}
+              desc="Chỉ cấp đúng vai trò cần thiết; mọi quyền đều có thời hạn & ghi log." />
+            <Card title="Minh bạch & Kiểm toán" icon={ClipboardCheck}
+              desc="Lịch sử thay đổi, nhật ký truy cập và báo cáo định kỳ được lưu đầy đủ." />
+          </div>
+        </div>
+      </Section>
+
+      {/* ===== QUY ĐỊNH BẢO MẬT CHÍNH ===== */}
+      <Section className="bg-slate-50">
+        <div className="max-w-6xl px-4 mx-auto">
+          <H2>Quy định bảo mật</H2>
+          <div className="grid gap-4 mt-8 md:grid-cols-2">
+            <List
+              title="Bảo vệ dữ liệu"
+              items={[
+                ["Mã hoá", "Dữ liệu mã hoá khi truyền (TLS 1.2+) & khi lưu (AES-256 hoặc tương đương).", Lock],
+                ["Phân loại dữ liệu", "Xác định mức độ (Public/Internal/Confidential/Restricted) trước khi xử lý.", Database],
+                ["Sao lưu & khôi phục", "Backup hằng ngày, kiểm thử khôi phục định kỳ; RPO/RTO theo SLA.", Repeat2],
+                ["Lưu trữ tối thiểu", "Chỉ lưu dữ liệu cần thiết; có chính sách xoá/ẩn danh theo thời hạn.", Server],
+              ]}
+            />
+            <List
+              title="Truy cập & quyền hạn"
+              items={[
+                ["Xác thực", "Bắt buộc MFA với tài khoản nội bộ; khuyến nghị SSO/OAuth với phía khách hàng.", UserCheck],
+                ["RBAC", "Quyền dựa trên vai trò; cấp quyền tạm thời cho yêu cầu vận hành.", KeySquare],
+                ["Mạng & API", "Giới hạn IP, tường lửa WAF, rate-limit & kiểm soát khoá API.", Network],
+                ["Nhật ký & theo dõi", "Ghi log truy cập, thay đổi cấu hình; lưu trữ log ≥ 180 ngày.", BookOpenText],
+              ]}
+            />
+            <List
+              title="Tuân thủ & pháp lý"
+              items={[
+                ["DPA & SCC", "Ký Thoả thuận xử lý dữ liệu (DPA) và điều khoản chuyển giao theo yêu cầu.", FileText],
+                ["Bí mật kinh doanh", "Nhân sự 3BOW cam kết không chia sẻ dữ liệu cho bên thứ ba khi chưa có phép.", ShieldCheck],
+                ["Bên thứ ba", "Đánh giá rủi ro nhà cung cấp; chỉ dùng dịch vụ đạt chuẩn bảo mật.", Globe2],
+                ["Yêu cầu pháp lý", "Chỉ cung cấp dữ liệu khi có văn bản hợp lệ; thông báo cho khách hàng khi luật cho phép.", MailCheck],
+              ]}
+            />
+            <List
+              title="Sự cố & thông báo"
+              items={[
+                ["Phát hiện", "Giám sát bất thường, cảnh báo realtime.", BellRing],
+                ["Ứng phó", "Kích hoạt IRP (Incident Response Plan) với vai trò & kênh liên lạc rõ ràng.", Bug],
+                ["Thông báo vi phạm", "Thông báo khách hàng trong thời hạn cam kết ở SLA/DPA.", Clock4],
+                ["Hậu kiểm", "Báo cáo nguyên nhân gốc rễ (RCA) & biện pháp phòng ngừa tái diễn.", CheckCircle2],
+              ]}
+            />
+          </div>
+        </div>
+      </Section>
+
+      {/* ===== QUYỀN & TRÁCH NHIỆM ===== */}
+      <Section className="bg-white">
+        <div className="max-w-6xl px-4 mx-auto">
+          <H2>Quyền & Trách nhiệm hai bên</H2>
+          <div className="grid gap-4 mt-6 md:grid-cols-2">
+            <BulletPanel
+              title="Khách hàng cung cấp"
+              bullets={[
+                "Thông tin hệ thống & phạm vi dữ liệu được phép truy cập.",
+                "Tài khoản/Quyền truy cập cần thiết (hoặc 3BOW hỗ trợ tạo tài khoản tách biệt).",
+                "Đầu mối phê duyệt quyền và xác nhận thay đổi.",
+              ]}
+            />
+            <BulletPanel
+              title="3BOW cam kết"
+              bullets={[
+                "Chỉ sử dụng dữ liệu cho mục đích trong Hợp đồng & NDA.",
+                "Không tải xuống dữ liệu nhạy cảm nếu không thật sự cần thiết.",
+                "Gỡ quyền/thu hồi dữ liệu ngay khi kết thúc dự án hoặc theo yêu cầu.",
+              ]}
+            />
+          </div>
+        </div>
+      </Section>
+
+      {/* ===== CTA / LIÊN HỆ ===== */}
+      <Section className="relative overflow-hidden bg-gradient-to-r from-sky-700 to-indigo-700">
+        <div className="absolute inset-0 opacity-20 [background:radial-gradient(600px_200px_at_20%_20%,white,transparent)]" />
+        <div className="relative max-w-6xl px-4 mx-auto text-white">
+          <div className="grid items-center gap-6 md:grid-cols-2">
+            <div>
+              <H2>Yêu cầu bộ tài liệu đầy đủ (SLA, DPA, NDA mẫu)</H2>
+              <p className="mt-3 text-white/90">
+                Chúng tôi có sẵn checklist kiểm thử bảo mật, quy trình IRP và biểu mẫu đánh giá rủi ro nhà cung cấp.
+              </p>
+            </div>
+            <div className="justify-self-start md:justify-self-end">
+              <a
+                href="/contact"
+                className="inline-flex items-center gap-2 px-5 py-3 font-semibold transition bg-white rounded-full text-slate-900 hover:bg-slate-100"
+              >
+                <Link2 className="w-4 h-4" />
+                Liên hệ 3BOW
+              </a>
+            </div>
+          </div>
+        </div>
+      </Section>
+
+      {/* ===== FAQ ===== */}
+      <Section className="bg-slate-50">
+        <div className="max-w-6xl px-4 mx-auto">
+          <H2>FAQ – Câu hỏi thường gặp</H2>
+          <div className="mt-6 space-y-3">
+            <FAQ q="3BOW có ký NDA/DPA riêng theo mẫu của khách hàng không?"
+                a="Có. Chúng tôi linh hoạt theo mẫu của khách hàng hoặc dùng mẫu tiêu chuẩn của 3BOW." />
+            <FAQ q="Dữ liệu được lưu ở đâu?"
+                a="Triển khai tuỳ dự án (VN/Singapore/US). Vị trí lưu trữ sẽ ghi rõ trong hợp đồng." />
+            <FAQ q="Có hỗ trợ kiểm thử bảo mật độc lập không?"
+                a="Sẵn sàng phối hợp pentest/VA của bên thứ ba, xử lý khuyến nghị theo mức độ ưu tiên." />
+            <FAQ q="Khi kết thúc hợp đồng, 3BOW xử lý dữ liệu thế nào?"
+                a="Thực hiện xoá/ẩn danh theo điều khoản DPA; bàn giao bản sao cần thiết và thu hồi mọi khoá truy cập." />
+          </div>
+        </div>
+      </Section>
     </SiteShell>
   );
 }
 
-/* ================= HERO ================= */
-function Hero() {
+/* ===== Reusable bits ===== */
+function Badge({ icon, text }: { icon: React.ReactNode; text: string }) {
   return (
-    <section className="relative">
-      <div className="relative h-[50vh] min-h-[360px] w-full overflow-hidden">
-        <Image
-          src="https://images.unsplash.com/photo-1605901309584-818e25960a8b?q=80&w=2000&auto=format&fit=crop"
-          alt="Bảo mật dữ liệu khách hàng"
-          fill
-          priority
-          className="object-cover"
-          sizes="100vw"
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-white/90 via-white/45 to-white/0" />
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="px-4 text-center">
-            <p className="text-[12px] md:text-sm text-zinc-700">
-              Chúng tôi coi dữ liệu của bạn là tài sản cần được bảo vệ nghiêm ngặt
-            </p>
-            <h1 className="mt-2 text-3xl font-extrabold leading-tight tracking-wide md:text-5xl text-zinc-900/90">
-              CHÍNH SÁCH <span className="text-violet-600">BẢO MẬT</span> 3BOW
-            </h1>
-            <p className="max-w-3xl mx-auto mt-3 text-zinc-700">
-              Tất cả quy trình, hệ thống và con người tại 3BOW đều tuân thủ các tiêu chuẩn
-              bảo mật nhằm đảm bảo an toàn, minh bạch và toàn vẹn dữ liệu khách hàng.
-            </p>
-          </div>
-        </div>
-      </div>
-      <div className="pointer-events-none absolute left-1/2 top-full -mt-6 h-10 w-[92%] -translate-x-1/2 rounded-[28px] bg-white shadow-[0_10px_30px_rgba(0,0,0,0.08)]" />
-    </section>
+    <span className="inline-flex items-center gap-2 px-3 py-1 text-sm rounded-full bg-white/15 ring-1 ring-white/25">
+      {icon} {text}
+    </span>
   );
 }
 
-/* ================= 12 POLICIES ================= */
-function PolicyList() {
-  const items = [
-    {
-      icon: <FileText className="w-5 h-5" />,
-      title: "Thu thập tối thiểu",
-      desc: "Chỉ thu thập thông tin cần thiết để thực hiện dịch vụ; không yêu cầu dữ liệu vượt quá mục đích sử dụng.",
-    },
-    {
-      icon: <ClipboardCheck className="w-5 h-5" />,
-      title: "Mục đích rõ ràng",
-      desc: "Thông báo minh bạch về mục đích xử lý; không sử dụng dữ liệu ngoài phạm vi đã thỏa thuận.",
-    },
-    {
-      icon: <Lock className="w-5 h-5" />,
-      title: "Mã hoá & an toàn truyền/nhận",
-      desc: "Mã hoá khi truyền (HTTPS/TLS) và áp dụng lớp bảo vệ khi lưu trữ; kiểm soát rò rỉ dữ liệu.",
-    },
-    {
-      icon: <KeyRound className="w-5 h-5" />,
-      title: "Kiểm soát truy cập theo vai trò",
-      desc: "RBAC – chỉ những người có thẩm quyền mới được tiếp cận; ghi log mọi truy cập, thay đổi.",
-    },
-    {
-      icon: <UserCheck className="w-5 h-5" />,
-      title: "Xác thực mạnh",
-      desc: "Áp dụng xác thực nhiều lớp cho tài khoản nhạy cảm; đổi mật khẩu định kỳ và bắt buộc tối thiểu độ mạnh.",
-    },
-    {
-      icon: <History className="w-5 h-5" />,
-      title: "Sao lưu & khôi phục",
-      desc: "Sao lưu định kỳ; kế hoạch DR (Disaster Recovery) để đảm bảo khôi phục dữ liệu khi có sự cố.",
-    },
-    {
-      icon: <Database className="w-5 h-5" />,
-      title: "Lưu trữ có thời hạn",
-      desc: "Đặt thời hạn lưu trữ phù hợp; xoá/ẩn danh khi hoàn tất mục đích hoặc theo yêu cầu pháp lý.",
-    },
-    {
-      icon: <ShieldCheck className="w-5 h-5" />,
-      title: "NDA & bảo mật nội bộ",
-      desc: "Tất cả nhân sự, đối tác ký thoả thuận bảo mật (NDA); đào tạo định kỳ về an toàn thông tin.",
-    },
-    {
-      icon: <Server className="w-5 h-5" />,
-      title: "Đối tác hạ tầng đạt chuẩn",
-      desc: "Chỉ sử dụng nhà cung cấp hạ tầng có chứng chỉ bảo mật phù hợp; ký DPA khi cần thiết.",
-    },
-    {
-      icon: <EyeOff className="w-5 h-5" />,
-      title: "Quyền của chủ thể dữ liệu",
-      desc: "Khách hàng có quyền yêu cầu xem/sửa/xoá dữ liệu; 3BOW phản hồi hợp lý, kịp thời.",
-    },
-    {
-      icon: <Globe className="w-5 h-5" />,
-      title: "Tuân thủ quy định pháp luật",
-      desc: "Tuân thủ pháp luật Việt Nam và các yêu cầu liên quan tới dữ liệu cá nhân, quảng cáo số.",
-    },
-    {
-      icon: <Shield className="w-5 h-5" />,
-      title: "Giám sát & phản hồi sự cố",
-      desc: "Giám sát an ninh 24/7; khi có sự cố, kích hoạt quy trình phản hồi, thông báo và khắc phục nhanh.",
-    },
-  ] as const;
-
+function Card({ title, desc, icon: Icon }: { title: string; desc: string; icon: React.ComponentType<any> }) {
   return (
-    <section className="relative z-[1] -mt-6 pb-8">
-      <div className="mx-auto w-[92%] max-w-6xl rounded-[28px] border border-zinc-200 bg-white/95 px-6 py-8 md:px-10">
-        <H2>12 CHÍNH SÁCH BẢO VỆ THÔNG TIN KHÁCH HÀNG</H2>
-        <div className="grid gap-6 mt-8 md:grid-cols-2 lg:grid-cols-3">
-          {items.map((x) => (
-            <div
-              key={x.title}
-              className="p-6 transition-all bg-white border shadow-sm group rounded-3xl border-zinc-200 hover:-translate-y-1 hover:border-violet-200 hover:shadow-lg"
-            >
-              <div className="grid w-10 h-10 rounded-full place-items-center bg-violet-50 text-violet-700">
-                {x.icon}
-              </div>
-              <h3 className="mt-3 text-lg font-semibold">{x.title}</h3>
-              <p className="mt-2 text-sm text-zinc-600">{x.desc}</p>
-              <div className="mt-4 h-0.5 w-0 bg-violet-500 transition-all duration-300 group-hover:w-1/2" />
+    <div className="p-5 transition bg-white border shadow-sm rounded-2xl border-slate-200 hover:shadow-md">
+      <div className="flex items-start gap-3">
+        <div className="grid h-11 w-11 place-items-center rounded-xl bg-sky-50 text-sky-700 ring-1 ring-sky-100">
+          <Icon className="w-5 h-5" />
+        </div>
+        <div>
+          <h3 className="text-lg font-bold">{title}</h3>
+          <p className="mt-1 text-sm text-gray-600">{desc}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function List({
+  title,
+  items,
+}: {
+  title: string;
+  items: [string, string, React.ComponentType<any>][];
+}) {
+  return (
+    <div className="p-5 bg-white border rounded-2xl border-slate-200">
+      <h3 className="text-lg font-bold">{title}</h3>
+      <ul className="mt-3 space-y-3">
+        {items.map(([t, d, I], i) => (
+          <li key={i} className="flex items-start gap-3">
+            <div className="mt-0.5 grid h-9 w-9 place-items-center rounded-lg bg-slate-50 text-slate-700 ring-1 ring-slate-200">
+              <I className="w-4 h-4" />
             </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/* ================= ABSOLUTE RULES TABLE ================= */
-function AbsoluteRules() {
-  const rows = [
-    ["Bán/chuyển nhượng dữ liệu khách hàng", "Cấm tuyệt đối", "Không ngoại lệ."],
-    ["Sử dụng dữ liệu KH cho mục đích quảng cáo nội bộ", "Cấm tuyệt đối", "Chỉ dùng theo phạm vi hợp đồng."],
-    ["Truy cập dữ liệu ngoài tài khoản/thiết bị được cấp", "Cấm tuyệt đối", "RBAC + log truy cập."],
-    ["Chia sẻ mật khẩu/tài khoản cho bên thứ ba", "Cấm tuyệt đối", "Bắt buộc 2FA cho tài khoản nhạy cảm."],
-    ["Gửi dữ liệu KH qua kênh công khai (chat, email cá nhân...)", "Cấm tuyệt đối", "Chỉ dùng kênh đã phê duyệt & mã hoá."],
-    ["Lưu dữ liệu KH trên thiết bị cá nhân không mã hoá", "Cấm tuyệt đối", "Tuân thủ chuẩn lưu trữ an toàn."],
-    ["Tải dữ liệu KH lên dịch vụ lưu trữ chưa phê duyệt", "Cấm tuyệt đối", "Chỉ dùng hạ tầng được duyệt & có DPA."],
-    ["Công bố case study có chứa dữ liệu nhạy cảm", "Cấm tuyệt đối", "Chỉ công bố khi đã ẩn danh và có văn bản đồng ý."],
-    ["Xuất dữ liệu KH theo yêu cầu không hợp lệ", "Cấm tuyệt đối", "Chỉ thực hiện khi có yêu cầu hợp pháp, đủ thẩm quyền."],
-  ] as const;
-
-  return (
-    <section className="py-14">
-      <div className="container-max">
-        <H2>QUY ĐỊNH <span className="text-violet-600">BẢO MẬT TUYỆT ĐỐI</span></H2>
-        <div className="mt-6 overflow-x-auto">
-          <table className="w-full bg-white border border-separate border-spacing-0 rounded-2xl border-zinc-200">
-            <thead>
-              <tr className="bg-zinc-50">
-                <th className="px-4 py-3 text-sm font-semibold text-left text-zinc-700">
-                  Hành vi
-                </th>
-                <th className="px-4 py-3 text-sm font-semibold text-left text-zinc-700">
-                  Trạng thái
-                </th>
-                <th className="px-4 py-3 text-sm font-semibold text-left text-zinc-700">
-                  Ghi chú
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map(([a, b, c], i) => (
-                <tr
-                  key={i}
-                  className="transition-colors border-t border-zinc-200 hover:bg-zinc-50/60"
-                >
-                  <td className="px-4 py-3 text-sm align-top">{a}</td>
-                  <td className="px-4 py-3 text-sm align-top">
-                    <span className="inline-flex items-center gap-2 rounded-full bg-red-50 px-2.5 py-1 text-xs font-semibold text-red-600 ring-1 ring-red-200">
-                      <Ban className="h-3.5 w-3.5" />
-                      {b}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-sm align-top text-zinc-600">{c}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        <p className="mt-3 text-sm text-zinc-500">
-          *Mọi vi phạm sẽ bị xử lý theo quy chế nội bộ và quy định pháp luật hiện hành.
-        </p>
-      </div>
-    </section>
-  );
-}
-
-/* ================= INVOICE COMMIT (HIGHLIGHT) ================= */
-function InvoiceCommit() {
-  return (
-    <section className="py-14">
-      <div className="container-max">
-        <div className="relative p-8 overflow-hidden text-center border shadow-lg group rounded-3xl border-violet-200 bg-gradient-to-r from-violet-600 to-sky-600">
-          {/* Aura + shine */}
-          <div className="absolute inset-0 pointer-events-none opacity-40">
-            <div className="absolute rounded-full -left-10 -top-16 h-52 w-52 bg-white/20 blur-3xl" />
-            <div className="absolute rounded-full -right-10 -bottom-16 h-52 w-52 bg-white/20 blur-3xl" />
-          </div>
-          <div className="pointer-events-none absolute inset-0 before:absolute before:inset-0 before:-translate-x-full before:bg-gradient-to-r before:from-transparent before:via-white/40 before:to-transparent before:skew-x-12 before:content-[''] before:transition-transform before:duration-1000 group-hover:before:translate-x-full" />
-
-          <div className="flex flex-col items-center max-w-3xl gap-2 mx-auto text-white">
-            <div className="grid w-12 h-12 rounded-full place-items-center bg-white/15">
-              <Receipt className="w-6 h-6" />
+            <div>
+              <p className="font-semibold">{t}</p>
+              <p className="text-sm text-gray-600">{d}</p>
             </div>
-            <h3 className="text-2xl font-extrabold tracking-wide uppercase">
-              3BOW CAM KẾT <span className="underline underline-offset-4 decoration-white/70">XUẤT HÓA ĐƠN 100%</span>
-            </h3>
-            <p className="text-white/90">
-              Mọi khoản chi tiêu dịch vụ tại 3BOW đều được xuất hoá đơn đầy đủ, chính xác,
-              đúng pháp luật, đúng thời hạn và đối soát minh bạch.
-            </p>
-          </div>
-        </div>
-      </div>
-    </section>
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }
 
-/* ================= CONTACT NOTE ================= */
-function ContactNote() {
+function BulletPanel({ title, bullets }: { title: string; bullets: string[] }) {
   return (
-    <section className="bg-[#F7FBFF] py-12">
-      <div className="text-center container-max">
-        <p className="max-w-3xl mx-auto text-sm text-zinc-600">
-          Nếu bạn có câu hỏi liên quan tới quyền riêng tư hoặc muốn thực hiện các quyền
-          đối với dữ liệu cá nhân (xem/sửa/xoá), vui lòng gửi yêu cầu tới{" "}
-          <a className="font-medium text-violet-700 hover:underline" href="mailto:contact@3bow.vn">
-            contact@3bow.vn
-          </a>{" "}
-          — chúng tôi sẽ phản hồi sớm nhất có thể.
-        </p>
+    <div className="p-5 bg-white border rounded-2xl border-slate-200">
+      <h3 className="text-lg font-bold">{title}</h3>
+      <ul className="mt-3 space-y-2">
+        {bullets.map((b, i) => (
+          <li key={i} className="flex gap-2 text-gray-700">
+            <CheckCircle2 className="mt-0.5 h-5 w-5 text-emerald-600" />
+            <span>{b}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function FAQ({ q, a }: { q: string; a: string }) {
+  const [open, setOpen] = React.useState(false);
+  return (
+    <div className="bg-white border rounded-xl border-slate-200">
+      <button
+        className="flex items-center justify-between w-full p-4 text-left"
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+      >
+        <span className="font-semibold">{q}</span>
+        <span className={`transition ${open ? "rotate-180" : ""}`}>⌄</span>
+      </button>
+      <div className={`grid transition-all duration-300 ${open ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`}>
+        <div className="overflow-hidden">
+          <p className="px-4 pb-4 text-gray-600">{a}</p>
+        </div>
       </div>
-    </section>
+    </div>
   );
 }

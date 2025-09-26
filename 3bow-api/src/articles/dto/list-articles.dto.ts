@@ -1,3 +1,4 @@
+//src/articles/dto/list-articles.dto.ts
 import { IsInt, Min, Max, IsOptional, IsString } from "class-validator";
 import { Transform } from "class-transformer";
 

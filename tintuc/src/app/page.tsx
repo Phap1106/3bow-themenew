@@ -419,7 +419,7 @@ export default function Page() {
               className="section-title"
               style={{ ["--accent" as any]: "#14b8a6" /* teal-500 */ }}
             >
-              Astar Marketing
+              3BOW Marketing
             </h2>
             <p className="mt-4 text-gray-600">
               Chúng tôi cung cấp các giải pháp online/offline phù hợp ngân sách,

@@ -118,7 +118,7 @@ const ITEMS: Item[] = [
     w: 1600,
     h: 1000,
     tags: ["Website", "UI/UX"],
-    client: "Astar x 3BOW",
+    client: "3BOW x FPT Software",
   },
 ];
 

@@ -295,9 +295,9 @@ export default function Page() {
                 <h3 className="m-0 text-lg font-bold">Hãy liên hệ với 3BOW</h3>
               </div>
               <div className="mt-4 space-y-3 text-sm text-zinc-700">
-                <p>Hotline: <strong>0859.036.789</strong></p>
-                <p>Email: <a className="underline" href="mailto:hello@3bow.vn">hello@3bow.vn</a></p>
-                <p>Địa chỉ: 56 Lê Lợi, Q.1, TP.HCM (ví dụ)</p>
+                <p>Hotline: <strong>0933 415 331</strong></p>
+                <p>Email: <a className="underline" href="mailto:3bowdigital@gmail.com">3bowdigital@gmail.com</a></p>
+                <p>Địa chỉ: Số 12, đường Xóm Miễu, Thôn Duyên Trường, Xã Duyên Thái, Huyện Thường Tín, Thành phố Hà Nội, Việt Nam</p>
                 <a
                   href="/lien-he"
                   className="inline-flex items-center justify-center w-full px-4 py-2 text-white transition bg-black rounded-lg hover:opacity-90"

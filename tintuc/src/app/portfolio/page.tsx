@@ -290,7 +290,7 @@ export default function PortfolioPage() {
             <Link href="/contact" className="inline-flex items-center gap-2 px-5 py-3 font-medium text-white bg-black rounded-2xl hover:opacity-90">
               Bắt đầu dự án
             </Link>
-            <a href="mailto:hello@3bow.vn" className="inline-flex items-center gap-2 px-5 py-3 font-medium border border-black rounded-2xl hover:bg-black/5">
+            <a href="mailto:3bowdigital@gmail.com" className="inline-flex items-center gap-2 px-5 py-3 font-medium border border-black rounded-2xl hover:bg-black/5">
               Gửi email
             </a>
           </div>

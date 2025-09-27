@@ -167,7 +167,7 @@ function Header() {
             alt="3BOW Digital"
             priority
             sizes="(min-width:1536px) 360px, (min-width:1280px) 320px, (min-width:1024px) 300px, (min-width:768px) 240px, 200px"
-            className="shrink-0 select-none object-contain w-auto h-[48px] sm:h-[56px] md:h-[64px] lg:h-[74px]"
+            className="shrink-0 select-none object-contain w-auto h-[60px] sm:h-[70px] md:h-[100px] lg:h-[130px]"
           />
         </Link>
 

@@ -1,0 +1,262 @@
+/* app/globals.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============ COMMON ============ */
+.container-max{ @apply px-4 mx-auto max-w-7xl; }
+
+.input{
+  @apply w-full px-3 text-sm transition bg-white border rounded-lg outline-none h-11 border-zinc-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20;
+}
+.input-invalid{ @apply border-red-500 focus:border-red-500 focus:ring-red-500/20; }
+
+html, body { width:100%; max-width:100%; overflow-x:hidden; }
+
+.btn{ @apply inline-flex items-center justify-center rounded-lg px-5 py-2.5 font-medium transition; }
+.btn-raise{ @apply shadow-sm hover:shadow-md active:shadow; }
+.btn-primary{ @apply bg-[#1677ff] text-white hover:bg-[#0b5bd3]; }
+.btn-success{ @apply text-white bg-emerald-600 hover:bg-emerald-600/90; }
+.btn-secondary{ @apply bg-white border border-zinc-300 hover:bg-violet-50 hover:text-violet-700 hover:border-violet-300; }
+
+:root{
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  --text-body:#808080;     /* màu nội dung */
+  --text-heading:#110729;  /* màu tiêu đề */
+  --accent:#F0B15E;  
+}
+
+/* ============ HERO ============ */
+/* nhỏ chuyển động hover nhẹ cho H1 */
+.interactive-h1 .line1, .interactive-h1 .line2{
+  transition: transform .35s cubic-bezier(.2,.8,.2,1), letter-spacing .3s;
+  will-change: transform;
+}
+.interactive-h1:hover .line1{ transform: translateX(-4px); }
+.interactive-h1:hover .line2{ transform: translateX(4px); }
+
+/* gradient cho dòng accent */
+.gradient-accent{
+  background: linear-gradient(90deg, var(--from), var(--to));
+  -webkit-background-clip: text; background-clip: text;
+  color: transparent; -webkit-text-fill-color: transparent;
+  text-shadow: 0 6px 24px rgba(0,0,0,.25);
+}
+.hero-word-accent{
+  background: inherit; -webkit-background-clip: text; background-clip: text;
+  color: transparent; -webkit-text-fill-color: transparent;
+}
+
+/* nút điều hướng */
+.hero-btn{
+  position:absolute; top:50%; transform:translateY(-50%); z-index:15;
+  height:66px; width:48px; border-radius:14px; display:grid; place-items:center;
+  color:#fff; border:1px solid rgba(255,255,255,.28); backdrop-filter:blur(6px);
+  background:linear-gradient(180deg,rgba(255,255,255,.14),rgba(0,0,0,.4));
+  box-shadow:0 12px 32px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.25);
+  transition:transform .2s, box-shadow .2s, background .2s, border-color .2s;
+}
+@media (min-width:768px){ .hero-btn{ height:92px; width:64px } }
+.hero-btn .arrow-icon{ font-size:32px; line-height:1; transition:transform .2s, opacity .2s; }
+@media (min-width:768px){ .hero-btn .arrow-icon{ font-size:44px } }
+.hero-btn:hover{
+  box-shadow:0 0 0 2px rgba(255,255,255,.35),0 0 26px rgba(59,130,246,.55),0 14px 40px rgba(0,0,0,.45);
+  border-color:rgba(255,255,255,.6);
+  background:linear-gradient(180deg,rgba(255,255,255,.22),rgba(0,0,0,.55));
+}
+.hero-btn:active{ transform:translateY(calc(-50% + 1px)) scale(.98) }
+
+/* badge scroll */
+.scroll-badge{
+  color:#fff; background:rgba(0,0,0,.28); padding:.5rem 1rem; border-radius:.5rem;
+  font-size:.85rem; text-align:center; backdrop-filter:blur(6px);
+  box-shadow:0 0 24px rgba(255,255,255,.12) inset, 0 6px 24px rgba(0,0,0,.25);
+  transition:transform .2s, box-shadow .2s;
+}
+.scroll-badge:hover{ transform:translateY(1px); box-shadow:0 0 30px rgba(255,255,255,.16) inset, 0 10px 28px rgba(0,0,0,.28); }
+
+/* full-bleed helper */
+.bleed{ position:relative; left:50%; right:50%; width:100vw; max-width:100vw; margin-left:-50vw; margin-right:-50vw; overflow:hidden; }
+
+/* Section title */
+.section-title{
+  color:#0f172a; font-weight:800; line-height:1.15; letter-spacing:-0.02em;
+  font-size:clamp(28px,3.2vw,44px);
+  --accent:#f59e0b; position:relative; display:inline-block; padding-bottom:.45rem;
+  transition:letter-spacing .22s, transform .22s, color .22s, text-shadow .22s;
+}
+.section-title::after{
+  content:""; position:absolute; left:50%; transform:translateX(-50%); bottom:0;
+  height:3px; width:48%; border-radius:9999px;
+  background:linear-gradient(90deg,var(--accent),#fbbf24); opacity:.9;
+  transition:width .25s, opacity .25s;
+}
+.section-title:hover{ letter-spacing:-0.015em; transform:translateY(-1px); text-shadow:0 1px 0 rgba(0,0,0,.03); }
+.section-title:hover::after{ width:78%; opacity:1; }
+
+/* Brand ticker */
+.ticker{ position: relative; overflow: hidden; display: block; }
+.ticker-track{ display: flex; align-items: center; width: max-content; animation: ticker-move 28s linear infinite; }
+@media (min-width:1024px){ .ticker-track{ animation-duration:36s; } }
+.ticker-list{ display:flex; align-items:center; }
+.ticker-list li{ padding: 0 8px; }
+.ticker-pill{
+  display:inline-block; white-space:nowrap; padding:6px 14px;
+  border-radius:9999px; border:1px solid rgba(255,255,255,.18);
+  background:rgba(255,255,255,.08); color:#fff; font-weight:600; font-size:12px; line-height:1;
+}
+@media (min-width:768px){ .ticker-pill{ font-size:13px; padding:7px 16px; } }
+.ticker-fade{ position:absolute; top:0; bottom:0; width:56px; pointer-events:none; }
+.ticker-fade.left{  left:0;  background:linear-gradient(to right, rgba(0,0,0,.18), transparent); }
+.ticker-fade.right{ right:0; background:linear-gradient(to left,  rgba(0,0,0,.18), transparent); }
+.ticker:hover .ticker-track{ animation-play-state: running !important; }
+@keyframes ticker-move{ from{ transform: translateX(0); } to{ transform: translateX(-50%); } }
+
+/* Background kenburns */
+@keyframes kenburnsSoft { from { transform: scale(1.02); } to { transform: scale(1.06); } }
+.animate-kenburns { animation: kenburnsSoft 6.5s ease-out forwards; will-change: transform; }
+
+/* H1 fade */
+@keyframes heroFadeUp { from { opacity:0; transform:translateY(10px);} to { opacity:1; transform:translateY(0);} }
+@keyframes heroFadeUpAccent { from { opacity:0; transform:translateY(12px);} to { opacity:1; transform:translateY(0);} }
+
+.hero-title{ perspective:800px; cursor:default; }
+.hero-line{   animation: heroFadeUp .90s ease-out both; }
+.hero-accent{ animation: heroFadeUpAccent 1.05s ease-out both; }
+
+/* hover wiggle từng từ */
+.hero-word{ display:inline-block; transition: transform .22s ease, text-shadow .22s ease; will-change: transform; }
+.hero-title:hover .hero-word:nth-child(3n){   transform: translateY(-2px) rotate(-.25deg); }
+.hero-title:hover .hero-word:nth-child(3n+1){ transform: translateY(1px)  rotate(.2deg); }
+.hero-title:hover .hero-word:nth-child(5n){   transform: translateY(-3px) scale(1.02); }
+.hero-title:hover .hero-word{ text-shadow: 0 2px 10px rgba(0,0,0,.12); }
+.hero-title:hover .hero-word-accent:nth-child(2n){ transform: translateY(-2px) scale(1.01); }
+
+/* Ẩn scrollbar ngang cho slider mobile */
+.no-scrollbar::-webkit-scrollbar{ display:none; }
+.no-scrollbar{ -ms-overflow-style:none; scrollbar-width:none; }
+
+/* ============ WELCOME IMAGE ============ */
+.hero-welcome-img{
+  position:absolute; inset:0; z-index:6;
+  display:flex; justify-content:center; align-items:flex-start;
+  padding-top: clamp(70px, 13vh, 190px);   /* đẩy lên cao hơn */
+  pointer-events:none;
+}
+.hero-welcome-img img{
+  opacity:.24; mix-blend-mode:overlay;
+  filter: drop-shadow(0 10px 38px rgba(0,0,0,.35));
+  transform: rotate(-6deg);
+  transition: transform .8s cubic-bezier(.2,.8,.2,1);
+  width: clamp(220px, 62vw, 1200px);
+  height:auto; max-width:92vw;
+}
+
+/* ============ ILLUSTRATIONS PER SLIDE ============ */
+.hero-illustration{ position:absolute; inset:0; z-index:8; pointer-events:none; }
+.hero-illustration img{ filter: drop-shadow(0 16px 40px rgba(0,0,0,.35)); }
+
+
+/* Slide 0 (nền vàng) – h3-slide-1-img-2-2.png: vào giữa + to hơn */
+.hero-illustration img[alt="deco-0"]{
+  /* desktop: đặt giữa bằng translateX, không bị tràn trái */
+  left: 30% !important;
+  transform: translateX(-50%) rotate(-8deg) !important;
+
+  /* to thêm một chút so với trước */
+  width: clamp(320px, 50vw, 1000px) !important;
+  bottom: clamp(36px, 11vh, 160px) !important;
+}
+
+/* Mobile: vẫn giữa màn hình, nhưng nhỏ hơn chút để không che H1 */
+@media (max-width: 767px){
+  .hero-illustration img[alt="deco-0"]{
+    left: 50% !important;
+    transform: translateX(-50%) rotate(-8deg) !important;
+    width: clamp(280px, 88vw, 640px) !important;
+    bottom: clamp(20px, 8vh, 120px) !important;
+  }
+}
+/* Slide 1 (nền xanh) – h3-slide-2.png: THU NHỎ, không tràn */
+.hero-illustration img[alt="deco-1"]{
+  width: clamp(220px, 36vw, 540px) !important;            /* nhỏ hơn */
+  right: min(6%, 64px) !important;
+  bottom: clamp(28px, 8vh, 120px) !important;
+}
+@media (max-width: 767px){
+  /* mobile: vẫn rõ nhưng không chiếm quá nhiều */
+  .hero-illustration img[alt="deco-1"]{
+    width: clamp(220px, 64vw, 420px) !important;
+    right: 6% !important; bottom: 7% !important;
+  }
+}
+
+/* Slide 2 (màu vàng nhạt/xanh) – giữ kích thước vừa mắt */
+.hero-illustration img[alt="deco-2"]{
+  width: clamp(260px, 40vw, 680px) !important;
+  left: clamp(4%, 10vw, 180px) !important;
+  bottom: clamp(32px, 10vh, 150px) !important;
+}
+
+/* ============ TITLE LAYOUT TWEAKS ============ */
+/* ===== H1 BIGGER ===== */
+/* Desktop ≥1024px: to rõ ràng hơn */
+@media (min-width: 1024px){
+  .hero-title .hero-line{
+    font-size: clamp(56px, 6.6vw, 100px) !important;
+    line-height: 1.05 !important;
+    letter-spacing: -0.02em !important;
+  }
+}
+/* Tablet */
+@media (min-width: 768px) and (max-width: 1023px){
+  .hero-title .hero-line{
+    font-size: clamp(44px, 5.8vw, 88px) !important;
+    line-height: 1.06 !important;
+  }
+}
+/* Mobile */
+@media (max-width: 767px){
+  .hero-title .hero-line{
+    font-size: clamp(36px, 12vw, 68px) !important;
+    line-height: 1.08 !important;
+  }
+}
+
+/* ===== STRONGER HOVER (nhưng vẫn mượt) ===== */
+.hero-title{
+  transition: filter .25s ease, transform .25s ease;
+}
+.hero-title:hover{
+  filter: drop-shadow(0 10px 32px rgba(0,0,0,.25));
+}
+
+/* đẩy biên độ chuyển động từng từ lên nhẹ */
+.hero-title:hover .hero-word:nth-child(3n){
+  transform: translateY(-4px) rotate(-0.6deg);
+}
+.hero-title:hover .hero-word:nth-child(3n+1){
+  transform: translateY(2px) rotate(0.4deg);
+}
+.hero-title:hover .hero-word:nth-child(5n){
+  transform: translateY(-5px) scale(1.03);
+}
+/* accent nhấn mạnh hơn 1 chút */
+.hero-title:hover .hero-word-accent:nth-child(2n){
+  transform: translateY(-4px) scale(1.02);
+  text-shadow: 0 4px 18px rgba(0,0,0,.22);
+}
+/* ĐẨY H1 SANG PHẢI HƠN 1 CHÚT */
+@media (min-width: 1024px){
+  /* trước là ~ clamp(40px,8vw,220px) → tăng lên */
+  .hero-title{
+    margin-left: clamp(64px, 10vw, 240px) !important;
+  }
+}
+@media (min-width: 768px) and (max-width: 1023px){
+  /* tablet cũng đẩy thêm nhẹ */
+  .hero-title{
+    margin-left: clamp(32px, 8vw, 180px) !important;
+  }
+}

@@ -60,7 +60,7 @@ echo NEXT_PUBLIC_API_URL=http://localhost:4000/api > .env.local
 
 yarn
 yarn dev    # http://localhost:3000
-
+aaa
 
 Trang tin: http://localhost:3000/news (lưới card: ảnh + tiêu đề + mô tả + tác giả + thời gian + phân trang)
 

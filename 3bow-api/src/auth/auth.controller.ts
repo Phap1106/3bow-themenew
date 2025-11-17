@@ -37,19 +37,24 @@ export class AuthController {
   ) {
     const { accessToken, refreshToken, user } =
       await this.authService.login(dto);
-    const isProd = process.env.NODE_ENV === 'production';
+      
+    // FIX: Hardcode domain giống AuthService để đồng bộ
+    const domain = '.3bowdigital.com'; 
+
     res.cookie('access_token', accessToken, {
       httpOnly: true,
       sameSite: 'lax',
-      secure: isProd,
+      secure: true, // Luôn true cho https
       path: '/',
+      domain: domain, // <--- THÊM
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
     res.cookie('refresh_token', refreshToken, {
       httpOnly: true,
       sameSite: 'lax',
-      secure: isProd,
+      secure: true, // Luôn true cho https
       path: '/',
+      domain: domain, // <--- THÊM
       maxAge: 30 * 24 * 60 * 60 * 1000,
     });
     return { ok: true, user };
@@ -64,25 +69,30 @@ export class AuthController {
       await this.authService.logout(req.user.id);
     }
 
-    const isProd = process.env.NODE_ENV === 'production';
+    // FIX: Cấu hình xóa cookie phải Y HỆT lúc tạo
+    const domain = '.3bowdigital.com';
+
     const opts = {
       httpOnly: true,
       sameSite: 'lax' as const,
-      secure: isProd,
+      secure: true,
       path: '/',
+      domain: domain, // <--- QUAN TRỌNG NHẤT ĐỂ XÓA ĐƯỢC
     };
+    
     res.clearCookie('access_token', opts);
     res.clearCookie('refresh_token', opts);
+    
+    // Ghi đè thêm 1 lần nữa cho chắc chắn sạch
     res.cookie('access_token', '', { ...opts, maxAge: 0 });
     res.cookie('refresh_token', '', { ...opts, maxAge: 0 });
+    
     return { ok: true };
   }
 
   @HttpCode(200)
   @Post('force-logout')
   async forceLogout(@Body() body: { email: string }) {
-    // Endpoint để admin có thể force logout user bằng email
-    // Hoặc user tự force logout nếu bị stuck
     try {
       await this.authService.forceLogoutByEmail(body.email);
       return { ok: true, message: 'All sessions cleared successfully' };
@@ -140,6 +150,7 @@ export class AuthController {
     @Body() body: { challengeId: string; code: string },
     @Res() res: Response,
   ) {
+    // Hàm này dùng res.cookie bên trong AuthService nên đã được fix ở bước trước
     const next = await this.authService.loginVerifyVerify(
       body.challengeId,
       body.code,

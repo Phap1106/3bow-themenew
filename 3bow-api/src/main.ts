@@ -9,44 +9,64 @@ import * as express from 'express';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  
+  // Prefix cho API: http://domain/api/...
   const GLOBAL_PREFIX = 'api';
   app.setGlobalPrefix(GLOBAL_PREFIX);
 
-  app.use(cookieParser()); // ✅ callable
+  // Middleware xử lý Cookie
+  app.use(cookieParser());
 
-  // Tăng giới hạn kích thước body để hỗ trợ upload ảnh (tối đa 5MB)
+  // Tăng giới hạn upload body (5MB)
   app.use(express.json({ limit: '5mb' }));
   app.use(express.urlencoded({ limit: '5mb', extended: true }));
   app.use(express.raw({ limit: '5mb' }));
 
+  // === CẤU HÌNH CORS CHUẨN (QUAN TRỌNG) ===
   app.enableCors({
     origin: [
-      'http://localhost:3000',
       'https://3bowdigital.com',
       'https://www.3bowdigital.com',
       'https://3bowdigital.site',
       'https://www.3bowdigital.site',
+      'http://localhost:3000', // Dev local
+      'http://localhost:3001',
     ],
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true, // Cho phép Cookie/Session đi qua
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS', 'HEAD'],
+    // Mở rộng headers để tránh bị chặn bởi một số trình duyệt khó tính
+    allowedHeaders: [
+      'Content-Type', 
+      'Authorization', 
+      'X-Requested-With', 
+      'Accept', 
+      'Origin', 
+      'Access-Control-Allow-Headers',
+      'Access-Control-Request-Method',
+      'Access-Control-Request-Headers'
+    ],
   });
 
+  // Validation Pipe toàn cục
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
       transform: true,
       transformOptions: { enableImplicitConversion: true },
-      forbidUnknownValues: false,
+      forbidUnknownValues: false, // Fix lỗi validation trên một số payload lạ
     }),
   );
 
-  await app.init();
-  printRoutes(app, GLOBAL_PREFIX);
-
-  const port = Number(process.env.PORT || 4000);
+  // Port ưu tiên lấy từ ENV, fallback về 4001
+  const port = Number(process.env.PORT || 4001);
+  
   await app.listen(port, '0.0.0.0');
-  console.log(`\n✅ API ready on http://localhost:${port} (prefix: /${GLOBAL_PREFIX})`);
+  
+  console.log(`\n✅ API ready on port ${port} (Prefix: /${GLOBAL_PREFIX})`);
+  console.log(`✅ CORS Enabled for: https://3bowdigital.com`);
+  
+  // (Optional) In routes để debug - Có thể bỏ qua trong prod để log gọn hơn
+  // printRoutes(app, GLOBAL_PREFIX); 
 }
 bootstrap();
 

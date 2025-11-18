@@ -1,4 +1,3 @@
-
 // src/app/admin/leads/page.tsx
 "use client";
 
@@ -10,14 +9,14 @@ import AdminSidebar from "@/components/admin/AdminSidebar";
 import LogoutButton from "@/components/common/LogoutButton";
 
 /* ===== Status / Channel ===== */
+// Cập nhật khớp 100% với Database ENUM
 export const LEAD_STATUS = {
   NEW: "NEW",
-  CONTACTED: "CONTACTED",
-  QUALIFIED: "QUALIFIED",
+  IN_PROGRESS: "IN_PROGRESS", // Mới thêm
+  CONTACTED: "CONTACTED",     // Mới thêm
   WON: "WON",
   LOST: "LOST",
   SPAM: "SPAM",
-  ARCHIVED: "ARCHIVED",
 } as const;
 export type LeadStatus = (typeof LEAD_STATUS)[keyof typeof LEAD_STATUS];
 
@@ -31,7 +30,7 @@ export const LEAD_CHANNEL = {
 } as const;
 export type LeadChannel = (typeof LEAD_CHANNEL)[keyof typeof LEAD_CHANNEL];
 
-/* ===== Lead type: giữ string cho service/budget để hiển thị mọi key ===== */
+/* ===== Lead type ===== */
 export type Lead = {
   id: string;
   name: string;
@@ -63,15 +62,16 @@ type Paginated<T> = { items: T[]; total: number; page: number; limit: number };
 const API = process.env.NEXT_PUBLIC_API_URL!;
 
 /* ===== Labels / Normalizers ===== */
+// Cập nhật Label tiếng Việt chuẩn
 const statusLabel: Record<LeadStatus, string> = {
   NEW: "Chờ xử lý",
-  CONTACTED: "Đang xử lý",
-  QUALIFIED: "Đã qualify",
+  IN_PROGRESS: "Đang xử lý",
+  CONTACTED: "Đã liên hệ",
   WON: "Hoàn thành",
   LOST: "Hủy bỏ",
   SPAM: "Spam",
-  ARCHIVED: "Lưu trữ",
 };
+
 const statusChoices: { value: LeadStatus; text: string }[] =
   (Object.keys(LEAD_STATUS) as LeadStatus[]).map(v => ({ value: v, text: statusLabel[v] }));
 
@@ -92,6 +92,7 @@ const getServiceLabel = (v?: string | null, serviceText?: string | null) => {
     default: return serviceText || "—";
   }
 };
+
 const getBudgetLabel = (v?: string | null) => {
   const s = (v || "").toUpperCase();
   if (s === "LT_10M") return "<10tr/tháng";
@@ -121,76 +122,57 @@ function readMeta(j: any, fallback: { page: number; limit: number }) {
   const limit = Number(j?.limit ?? meta?.limit ?? j?.pageSize ?? fallback.limit);
   return { total, page, limit };
 }
+
 async function fetchLeads(page: number, limit: number, q: string, status?: LeadStatus | "ALL"): Promise<Paginated<Lead>> {
   const qStr = (s: string) => (s ? `&q=${encodeURIComponent(s)}` : "");
   const stStr = status && status !== "ALL" ? `&status=${status}` : "";
+  
   let url = `${API}/leads?page=${page}&limit=${limit}${qStr(q)}${stStr}`;
+  // Thêm cache: no-store để luôn lấy dữ liệu mới nhất
   let r = await fetch(url, { cache: "no-store", credentials: "include" });
+  
   let j = await r.json().catch(() => ({}));
   let items = readItems<Lead>(j);
   let meta = readMeta(j, { page, limit });
-  if (items.length || (j?.total ?? j?.meta?.total ?? 0) === 0)
-    return { items, total: meta.total, page: meta.page, limit: meta.limit };
-  url = `${API}/leads?page=${Math.max(0, page - 1)}&pageSize=${limit}${qStr(q)}${stStr}`;
-  r = await fetch(url, { cache: "no-store", credentials: "include" });
-  j = await r.json().catch(() => ({}));
-  items = readItems<Lead>(j);
-  meta = readMeta(j, { page, limit });
-  if (items.length) return { items, total: meta.total, page, limit: meta.limit };
-  const skip = (page - 1) * limit;
-  url = `${API}/leads?skip=${skip}&take=${limit}${qStr(q)}${stStr}`;
-  r = await fetch(url, { cache: "no-store", credentials: "include" });
-  j = await r.json().catch(() => ({}));
-  items = readItems<Lead>(j);
-  meta = readMeta(j, { page, limit });
-  return { items, total: meta.total, page, limit: meta.limit };
+
+  return { items, total: meta.total, page: meta.page, limit: meta.limit };
 }
+
 async function updateLeadStatus(id: string, status: LeadStatus) {
+  // Thử endpoint chuẩn trước
   let r = await fetch(`${API}/leads/${id}`, {
     method: "PATCH", headers: { "Content-Type": "application/json" }, credentials: "include",
     body: JSON.stringify({ status }),
   });
-  if (r.status === 404 || r.status === 405) {
-    r = await fetch(`${API}/leads/${id}/status`, {
-      method: "PATCH", headers: { "Content-Type": "application/json" }, credentials: "include",
-      body: JSON.stringify({ status }),
-    });
-  }
+
   if (!r.ok) throw new Error(await r.text());
 }
-async function deleteLead(id: string) {
-  let r = await fetch(`${API}/leads/${id}`, {
-    method: "DELETE",
-    credentials: "include",
-  });
 
-  // ⬇️ fallback cả khi 400 (Bad Request do pipe)
-  if (r.status === 404 || r.status === 405 || r.status === 400) {
-    r = await fetch(`${API}/leads/${id}/delete`, {
-      method: "POST",
-      credentials: "include",
-    });
+async function deleteLead(id: string) {
+  let r = await fetch(`${API}/leads/${id}`, { method: "DELETE", credentials: "include" });
+  
+  // Fallback cho endpoint custom nếu có
+  if (r.status === 404 || r.status === 405) {
+     r = await fetch(`${API}/leads/${id}/delete`, { method: "POST", credentials: "include" });
   }
 
-  if (!(r.ok || r.status === 204)) {
-    const txt = await r.text().catch(() => "");
-    throw new Error(txt || `Xoá thất bại (HTTP ${r.status})`);
+  if (!r.ok && r.status !== 204) {
+    throw new Error(`Xoá thất bại (HTTP ${r.status})`);
   }
 }
-
 
 /* ===== Page ===== */
 export default function LeadsPage() {
   const router = useRouter();
 
-  // sidebar
+  // Sidebar
   const [collapsed, setCollapsed] = React.useState(false);
   React.useEffect(() => { if (typeof window !== "undefined") setCollapsed(localStorage.getItem("admin.sidebar.collapsed") === "1"); }, []);
   const toggleCollapsed = React.useCallback(() => {
     setCollapsed((s) => { const nx = !s; if (typeof window !== "undefined") localStorage.setItem("admin.sidebar.collapsed", nx ? "1" : "0"); return nx; });
   }, []);
 
-  // list state
+  // List state
   const [q, setQ] = React.useState("");
   const [status, setStatus] = React.useState<LeadStatus | "ALL">("ALL");
   const [page, setPage] = React.useState(1);
@@ -199,30 +181,43 @@ export default function LeadsPage() {
   const [data, setData] = React.useState<Paginated<Lead>>({ items: [], total: 0, page: 1, limit: 10 });
   const [detail, setDetail] = React.useState<Lead | null>(null);
 
-  // delete
+  // Delete state
   const [toDelete, setToDelete] = React.useState<Lead | null>(null);
   const [deleting, setDeleting] = React.useState(false);
 
-  // debounce search
+  // Debounce search
   const [qDebounced, setQDebounced] = React.useState(q);
   React.useEffect(() => { const t = setTimeout(() => setQDebounced(q), 350); return () => clearTimeout(t); }, [q]);
 
   React.useEffect(() => {
     let alive = true;
     (async () => {
-      try { setLoading(true); const d = await fetchLeads(page, limit, qDebounced, status); if (alive) setData(d); }
-      catch (e: any) { toast.error(e?.message || "Không tải được danh sách leads"); }
+      try { 
+        setLoading(true); 
+        const d = await fetchLeads(page, limit, qDebounced, status); 
+        if (alive) setData(d); 
+      }
+      catch (e: any) { 
+        toast.error("Không tải được danh sách leads"); 
+      }
       finally { if (alive) setLoading(false); }
     })();
     return () => { alive = false; };
   }, [page, limit, qDebounced, status]);
 
   const onChangeStatus = async (id: string, next: LeadStatus) => {
+    const oldItems = [...data.items];
+    // Optimistic update (Cập nhật giao diện ngay lập tức)
+    setData((d) => ({ ...d, items: d.items.map((x) => (x.id === id ? { ...x, status: next } : x)) }));
+
     try {
       await updateLeadStatus(id, next);
-      setData((d) => ({ ...d, items: d.items.map((x) => (x.id === id ? { ...x, status: next } : x)) }));
       toast.success("Đã cập nhật trạng thái");
-    } catch (e: any) { toast.error(e?.message || "Cập nhật trạng thái thất bại"); }
+    } catch (e: any) { 
+      // Revert nếu lỗi
+      setData((d) => ({ ...d, items: oldItems }));
+      toast.error(e?.message || "Cập nhật trạng thái thất bại"); 
+    }
   };
 
   const totalPages = Math.max(1, Math.ceil(data.total / data.limit));
@@ -261,27 +256,26 @@ export default function LeadsPage() {
                   <input
                     value={q}
                     onChange={(e) => { setPage(1); setQ(e.target.value); }}
-                    placeholder="Tìm theo tên, SĐT, email, URL…"
-                    className="h-11 w-[320px] rounded-xl border bg-white pl-12 pr-3 text-sm outline-none focus:ring-2 focus:ring-zinc-200"
+                    placeholder="Tìm theo tên, SĐT, email…"
+                    className="h-11 w-[280px] sm:w-[320px] rounded-xl border bg-white pl-12 pr-3 text-sm outline-none focus:ring-2 focus:ring-zinc-200"
                   />
                 </div>
 
-                <div className="flex gap-1 overflow-x-auto">
+                <div className="flex gap-1 overflow-x-auto pb-1 sm:pb-0 max-w-full">
                   {[
                     { k: "ALL", label: "Tất cả" },
                     { k: "NEW", label: statusLabel.NEW },
+                    { k: "IN_PROGRESS", label: statusLabel.IN_PROGRESS },
                     { k: "CONTACTED", label: statusLabel.CONTACTED },
-                    { k: "QUALIFIED", label: statusLabel.QUALIFIED },
                     { k: "WON", label: statusLabel.WON },
-                    { k: "ARCHIVED", label: statusLabel.ARCHIVED },
-                    { k: "SPAM", label: statusLabel.SPAM },
                     { k: "LOST", label: statusLabel.LOST },
+                    { k: "SPAM", label: statusLabel.SPAM },
                   ].map((t) => (
                     <button
                       key={t.k}
                       onClick={() => { setStatus(t.k as any); setPage(1); }}
                       className={cls(
-                        "h-9 rounded-full px-3 text-xs border transition",
+                        "h-9 rounded-full px-3 text-xs border transition whitespace-nowrap",
                         status === (t.k as any)
                           ? "bg-zinc-900 text-white border-zinc-900"
                           : "bg-white hover:bg-zinc-50"
@@ -290,19 +284,6 @@ export default function LeadsPage() {
                       {t.label}
                     </button>
                   ))}
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <select
-                  value={limit}
-                  onChange={(e) => { setPage(1); setLimit(Number(e.target.value)); }}
-                  className="h-10 px-3 text-sm bg-white border outline-none rounded-xl focus:ring-2 focus:ring-zinc-200"
-                >
-                  {[10, 20, 50].map((n) => <option key={n} value={n}>{n}/trang</option>)}
-                </select>
-                <div className="text-sm text-zinc-600">
-                  Tổng: <b>{data.total}</b> · Trang {page}/{Math.max(1, Math.ceil(data.total / data.limit))}
                 </div>
               </div>
             </div>
@@ -314,69 +295,59 @@ export default function LeadsPage() {
               <table className="min-w-full text-sm">
                 <thead className="sticky top-0 z-10">
                   <tr className="bg-zinc-100/70 backdrop-blur text-[11px] uppercase tracking-wide text-zinc-600">
-                    <th className="w-56 px-4 py-3 text-left">Thời gian</th>
-                    <th className="px-4 py-3 text-left min-w-[260px]">Khách hàng</th>
-                    <th className="px-4 py-3 text-left w-[260px]">Liên hệ</th>
-                    <th className="px-4 py-3 text-left w-[220px]">Dịch vụ</th>
-                    <th className="w-40 px-4 py-3 text-left">Ngân sách</th>
-                    <th className="w-32 px-4 py-3 text-left">Kênh</th>
-                    <th className="px-4 py-3 text-left w-[220px]">Trạng thái</th>
-                    <th className="px-4 py-3 text-right w-36">Thao tác</th>
+                    <th className="w-48 px-4 py-3 text-left">Thời gian</th>
+                    <th className="px-4 py-3 text-left min-w-[200px]">Khách hàng</th>
+                    <th className="px-4 py-3 text-left w-[200px]">Dịch vụ</th>
+                    <th className="w-32 px-4 py-3 text-left">Ngân sách</th>
+                    <th className="px-4 py-3 text-left w-[200px]">Trạng thái</th>
+                    <th className="px-4 py-3 text-right w-28">Thao tác</th>
                   </tr>
                 </thead>
 
                 <tbody className="divide-y divide-zinc-100">
                   {loading ? (
                     <tr>
-                      <td colSpan={8} className="py-12 text-center text-zinc-500">
+                      <td colSpan={6} className="py-12 text-center text-zinc-500">
                         <Loader2 className="w-5 h-5 mx-auto mb-2 animate-spin" />
                         Đang tải…
                       </td>
                     </tr>
                   ) : data.items.length === 0 ? (
                     <tr>
-                      <td colSpan={8} className="py-12 text-center text-zinc-500">Không có dữ liệu</td>
+                      <td colSpan={6} className="py-12 text-center text-zinc-500">Không có dữ liệu</td>
                     </tr>
                   ) : (
-                    data.items.map((l, idx) => (
-                    <tr key={l.id} className="transition-colors odd:bg-white even:bg-zinc-50/40 hover:bg-indigo-50/40">
-                       <td className="w-56 px-4 py-3 text-sm text-zinc-700 whitespace-nowrap">
-  {fmt(l.createdAt)}
-</td>
-
-                        <td className="px-4 py-3">
-                          <div className="font-semibold leading-5">{l.name}</div>
-                          {l.note && <div className="text-xs text-zinc-500 line-clamp-1 mt-0.5">{l.note}</div>}
+                    data.items.map((l) => (
+                      <tr key={l.id} className="transition-colors odd:bg-white even:bg-zinc-50/40 hover:bg-indigo-50/40">
+                        <td className="px-4 py-3 text-zinc-600 whitespace-nowrap">
+                          {fmt(l.createdAt)}
                         </td>
 
                         <td className="px-4 py-3">
-                          <div className="flex flex-col">
-                            <a className="text-zinc-800 hover:underline" href={`tel:${l.phone}`}>{phoneMask(l.phone)}</a>
-                            {l.email && <a className="text-xs text-blue-600 hover:underline" href={`mailto:${l.email}`}>{l.email}</a>}
-                            {l.url && <a className="text-xs text-zinc-500 hover:underline" href={l.url} target="_blank">{l.url}</a>}
+                          <div className="font-semibold text-zinc-900">{l.name}</div>
+                          <div className="flex flex-col mt-0.5">
+                             <a className="text-xs text-blue-600 hover:underline w-fit" href={`tel:${l.phone}`}>{phoneMask(l.phone)}</a>
+                             {l.email && <span className="text-[11px] text-zinc-500">{l.email}</span>}
                           </div>
+                          {l.note && <div className="text-[11px] italic text-zinc-400 line-clamp-1 mt-1">Note: {l.note}</div>}
                         </td>
 
                         <td className="px-4 py-3">
-                          <div className="font-medium">{getServiceLabel(l.service, l.serviceText)}</div>
+                           <div className="font-medium">{getServiceLabel(l.service, l.serviceText)}</div>
+                           <span className="inline-flex items-center rounded-sm bg-zinc-100 px-1.5 py-0.5 text-[10px] text-zinc-500 mt-1">
+                            {l.channel}
+                          </span>
                         </td>
 
                         <td className="px-4 py-3">{getBudgetLabel(l.budget)}</td>
 
                         <td className="px-4 py-3">
-                          <span className="inline-flex items-center rounded-full bg-zinc-100 px-2 py-0.5 text-xs text-zinc-700">
-                            {l.channel}
-                          </span>
-                        </td>
-
-                        <td className="px-4 py-3">
-                          <div className="flex items-center gap-2">
+                          <div className="flex flex-col gap-1.5">
                             <StatusBadge status={l.status} />
                             <select
                               value={l.status}
                               onChange={(e) => onChangeStatus(l.id, e.target.value as LeadStatus)}
-                              className="h-8 px-2 text-xs bg-white border rounded-lg outline-none focus:ring-2 focus:ring-zinc-200"
-                              title="Đổi trạng thái"
+                              className="h-7 px-1 text-[11px] bg-white border rounded-md outline-none focus:ring-1 focus:ring-indigo-200 w-fit"
                             >
                               {statusChoices.map((s) => <option key={s.value} value={s.value}>{s.text}</option>)}
                             </select>
@@ -384,21 +355,9 @@ export default function LeadsPage() {
                         </td>
 
                         <td className="px-4 py-3 text-right">
-                          <div className="inline-flex items-center gap-2">
-                            <button
-                              onClick={() => setDetail(l)}
-                              className="inline-flex items-center gap-1 rounded-lg border px-2.5 py-1.5 text-xs hover:bg-zinc-50"
-                              title="Xem chi tiết"
-                            >
-                              <Eye className="w-4 h-4" /> Xem
-                            </button>
-                            <button
-                              onClick={() => setToDelete(l)}
-                              className="inline-flex items-center gap-1 rounded-lg border px-2.5 py-1.5 text-xs text-rose-700 border-rose-200 hover:bg-rose-50"
-                              title="Xóa lead"
-                            >
-                              <Trash2 className="w-4 h-4" /> Xóa
-                            </button>
+                          <div className="flex justify-end gap-1">
+                            <button onClick={() => setDetail(l)} className="p-1.5 border rounded hover:bg-zinc-50" title="Xem"><Eye size={14}/></button>
+                            <button onClick={() => setToDelete(l)} className="p-1.5 border rounded border-rose-100 text-rose-600 hover:bg-rose-50" title="Xóa"><Trash2 size={14}/></button>
                           </div>
                         </td>
                       </tr>
@@ -411,7 +370,7 @@ export default function LeadsPage() {
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className="flex items-center justify-center gap-2">
+            <div className="flex items-center justify-center gap-2 mt-2">
               <button
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={page <= 1}
@@ -434,56 +393,57 @@ export default function LeadsPage() {
 
       {/* Detail Drawer */}
       {detail && (
-        <div className="fixed inset-0 z-50">
-          <div className="absolute inset-0 bg-black/40" onClick={() => setDetail(null)} />
-          <aside className="absolute top-0 right-0 w-full h-full max-w-2xl overflow-y-auto bg-white shadow-2xl rounded-l-2xl">
-            <div className="sticky top-0 flex items-center justify-between px-6 py-4 border-b bg-white/90 backdrop-blur">
-              <div>
-                <div className="text-xs uppercase text-zinc-500">Chi tiết lead</div>
-                <div className="text-xl font-semibold tracking-tight">{detail.name}</div>
-              </div>
-              <button onClick={() => setDetail(null)} className="rounded-lg border px-3 py-1.5 text-sm hover:bg-zinc-50">
-                Đóng
-              </button>
+        <div className="fixed inset-0 z-50 flex justify-end">
+          <div className="absolute inset-0 bg-black/20 backdrop-blur-sm" onClick={() => setDetail(null)} />
+          <aside className="relative w-full h-full max-w-xl bg-white shadow-2xl overflow-y-auto animate-in slide-in-from-right duration-200">
+            <div className="sticky top-0 z-10 flex items-center justify-between px-6 py-4 border-b bg-white/95 backdrop-blur">
+              <h2 className="text-lg font-bold">Chi tiết Lead</h2>
+              <button onClick={() => setDetail(null)} className="p-2 rounded-full hover:bg-zinc-100"><ChevronLeft size={20}/></button>
             </div>
+            <div className="p-6 space-y-8">
+               <div className="flex items-center gap-4 p-4 border rounded-xl bg-zinc-50 border-zinc-100">
+                  <div className="flex-1">
+                    <div className="text-2xl font-bold text-zinc-900">{detail.name}</div>
+                    <div className="text-sm text-zinc-500 mt-1">{fmt(detail.createdAt)}</div>
+                  </div>
+                  <StatusBadge status={detail.status} />
+               </div>
 
-            <div className="p-6 space-y-6">
-              <section className="grid grid-cols-2 gap-4">
-                <KV k="Thời gian" v={fmt(detail.createdAt)} />
-                <KV k="Trạng thái" v={statusLabel[detail.status]} />
-                <KV k="SĐT" v={detail.phone} />
-                <KV k="Email" v={detail.email} />
-                <KV k="Website/Fanpage" v={detail.url} />
-                <KV k="Kênh" v={detail.channel} />
-              </section>
+               <div className="space-y-4">
+                  <h3 className="font-semibold text-zinc-900 border-b pb-2">Thông tin liên hệ</h3>
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <KV k="SĐT" v={detail.phone} />
+                    <KV k="Email" v={detail.email} />
+                    <KV k="Website" v={detail.url} />
+                    <KV k="Kênh" v={detail.channel} />
+                  </div>
+               </div>
 
-              <section className="grid grid-cols-2 gap-4">
-                <KV k="Dịch vụ" v={getServiceLabel(detail.service, detail.serviceText)} />
-                {detail.service?.toUpperCase() === "OTHER" && <KV k="Mô tả dịch vụ" v={detail.serviceText} />}
-                <KV k="Ngân sách" v={getBudgetLabel(detail.budget)} />
-              </section>
+               <div className="space-y-4">
+                  <h3 className="font-semibold text-zinc-900 border-b pb-2">Nhu cầu</h3>
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <KV k="Dịch vụ" v={getServiceLabel(detail.service, detail.serviceText)} />
+                    <KV k="Ngân sách" v={getBudgetLabel(detail.budget)} />
+                  </div>
+                  <div className="mt-2">
+                    <div className="text-xs uppercase text-zinc-500 mb-1">Ghi chú</div>
+                    <div className="p-3 text-sm border rounded-lg bg-zinc-50 min-h-[60px]">{detail.note || "Không có ghi chú"}</div>
+                  </div>
+               </div>
 
-              <section>
-                <div className="text-xs uppercase text-zinc-500">Ghi chú</div>
-                <div className="mt-1 whitespace-pre-wrap rounded-xl border bg-zinc-50 px-4 py-3 text-sm">
-                  {detail.note || "—"}
-                </div>
-              </section>
-
-              <section>
-                <div className="text-xs uppercase text-zinc-500 mb-2">Thông tin tracking</div>
-                <div className="grid grid-cols-2 gap-3">
-                  <KV k="UTM Source" v={detail.utmSource} />
-                  <KV k="UTM Medium" v={detail.utmMedium} />
-                  <KV k="UTM Campaign" v={detail.utmCampaign} />
-                  <KV k="UTM Term" v={detail.utmTerm} />
-                  <KV k="UTM Content" v={detail.utmContent} />
-                  <KV k="Referrer" v={detail.referrer} />
-                  <KV k="Page Path" v={detail.pagePath} />
-                  <KV k="IP" v={detail.ip} />
-                  <KV k="User Agent" v={detail.userAgent} mono />
-                </div>
-              </section>
+               <div className="space-y-4">
+                  <h3 className="font-semibold text-zinc-900 border-b pb-2">Tracking Data</h3>
+                  <div className="grid grid-cols-2 gap-3 text-xs">
+                    <KV k="Source" v={detail.utmSource} />
+                    <KV k="Medium" v={detail.utmMedium} />
+                    <KV k="Campaign" v={detail.utmCampaign} />
+                    <KV k="Page Path" v={detail.pagePath} mono/>
+                    <KV k="IP" v={detail.ip} mono />
+                    <div className="col-span-2">
+                       <KV k="User Agent" v={detail.userAgent} mono />
+                    </div>
+                  </div>
+               </div>
             </div>
           </aside>
         </div>
@@ -491,43 +451,44 @@ export default function LeadsPage() {
 
       {/* Confirm Delete */}
       {toDelete && (
-        <div className="fixed inset-0 z-50">
-          <div className="absolute inset-0 bg-black/30" onClick={() => !deleting && setToDelete(null)} />
-          <div className="absolute inset-0 flex items-center justify-center p-4">
-            <div className="w-full max-w-sm bg-white border shadow-xl rounded-2xl">
-              <div className="px-5 pt-5">
-                <div className="text-base font-semibold">Xóa lead?</div>
-                <div className="mt-1 text-sm text-zinc-600">
-                  Bạn chắc chắn muốn xóa lead <b>{toDelete.name}</b>? Hành động này không thể hoàn tác.
-                </div>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => !deleting && setToDelete(null)} />
+          <div className="relative w-full max-w-sm bg-white shadow-xl rounded-2xl p-6 space-y-4 animate-in zoom-in-95 duration-200">
+            <div className="text-center space-y-2">
+              <div className="mx-auto w-12 h-12 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center mb-2">
+                <Trash2 size={24} />
               </div>
-              <div className="flex items-center justify-end gap-2 px-5 py-4">
-                <button
-                  disabled={deleting}
-                  onClick={() => setToDelete(null)}
-                  className="h-10 px-3 text-sm bg-white border rounded-xl hover:bg-zinc-50 disabled:opacity-60"
-                >
-                  Hủy
-                </button>
-                <button
-                  onClick={async () => {
-                    try {
-                      setDeleting(true);
-                      await deleteLead(toDelete.id);
-                      setData((d) => ({ ...d, items: d.items.filter((x) => x.id !== toDelete.id), total: Math.max(0, d.total - 1) }));
-                      toast.success("Đã xóa lead");
-                      setToDelete(null);
-                    } catch (e: any) {
-                      toast.error(e?.message || "Xóa lead thất bại");
-                    } finally { setDeleting(false); }
-                  }}
-                  disabled={deleting}
-                  className="inline-flex items-center h-10 gap-2 px-3 text-sm text-white rounded-xl bg-rose-600 hover:bg-rose-700 disabled:opacity-60"
-                >
-                  {deleting && <Loader2 className="w-4 h-4 animate-spin" />}
-                  Xóa
-                </button>
-              </div>
+              <h3 className="text-lg font-bold">Xóa lead này?</h3>
+              <p className="text-sm text-zinc-500">
+                Hành động này không thể hoàn tác. Lead <b>{toDelete.name}</b> sẽ bị xóa vĩnh viễn.
+              </p>
+            </div>
+            <div className="flex gap-3 pt-2">
+              <button
+                disabled={deleting}
+                onClick={() => setToDelete(null)}
+                className="flex-1 h-10 text-sm font-medium bg-white border rounded-xl hover:bg-zinc-50 disabled:opacity-60"
+              >
+                Hủy bỏ
+              </button>
+              <button
+                onClick={async () => {
+                  try {
+                    setDeleting(true);
+                    await deleteLead(toDelete.id);
+                    setData((d) => ({ ...d, items: d.items.filter((x) => x.id !== toDelete.id), total: Math.max(0, d.total - 1) }));
+                    toast.success("Đã xóa lead");
+                    setToDelete(null);
+                  } catch (e: any) {
+                    toast.error(e?.message || "Xóa lead thất bại");
+                  } finally { setDeleting(false); }
+                }}
+                disabled={deleting}
+                className="flex-1 h-10 text-sm font-medium text-white rounded-xl bg-rose-600 hover:bg-rose-700 disabled:opacity-60 flex items-center justify-center gap-2"
+              >
+                {deleting && <Loader2 className="w-4 h-4 animate-spin" />}
+                Xóa ngay
+              </button>
             </div>
           </div>
         </div>
@@ -536,24 +497,26 @@ export default function LeadsPage() {
   );
 }
 
-/* ===== UI pieces ===== */
+/* ===== UI pieces (Cập nhật màu sắc mới) ===== */
 function StatusBadge({ status }: { status: LeadStatus }) {
   const map: Record<LeadStatus, string> = {
-    NEW: "bg-amber-100 text-amber-800",
-    CONTACTED: "bg-blue-100 text-blue-800",
-    QUALIFIED: "bg-indigo-100 text-indigo-800",
-    WON: "bg-emerald-100 text-emerald-800",
-    LOST: "bg-rose-100 text-rose-800",
-    SPAM: "bg-zinc-200 text-zinc-800",
-    ARCHIVED: "bg-zinc-100 text-zinc-600",
+    NEW: "bg-yellow-100 text-yellow-800 border border-yellow-200", // Chờ xử lý
+    IN_PROGRESS: "bg-blue-100 text-blue-800 border border-blue-200", // Đang xử lý
+    CONTACTED: "bg-purple-100 text-purple-800 border border-purple-200", // Đã liên hệ (Mới)
+    WON: "bg-emerald-100 text-emerald-800 border border-emerald-200", // Hoàn thành
+    LOST: "bg-rose-100 text-rose-800 border border-rose-200", // Hủy bỏ
+    SPAM: "bg-zinc-100 text-zinc-600 border border-zinc-200", // Spam
   };
-  return <span className={cls("inline-flex rounded-full px-2 py-0.5 text-xs", map[status])}>{statusLabel[status]}</span>;
+  return <span className={cls("inline-flex rounded-md px-2 py-0.5 text-[10px] font-medium whitespace-nowrap", map[status])}>
+    {statusLabel[status]}
+  </span>;
 }
+
 function KV({ k, v, mono }: { k: string; v?: string | null; mono?: boolean }) {
   return (
-    <div>
-      <div className="text-xs uppercase text-zinc-500">{k}</div>
-      <div className={cls("text-sm", mono && "font-mono break-all")}>{v || "—"}</div>
+    <div className="break-words">
+      <div className="text-[10px] uppercase tracking-wider text-zinc-400 mb-0.5">{k}</div>
+      <div className={cls("text-sm text-zinc-800", mono && "font-mono text-xs text-zinc-600")}>{v || "—"}</div>
     </div>
   );
 }

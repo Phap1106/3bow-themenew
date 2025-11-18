@@ -32,3 +32,8 @@ export enum LeadStatus {
   LOST = 'LOST',
   SPAM = 'SPAM',
 }
+export enum UserRole {
+  ADMIN = 'ADMIN',
+  SUPPORT_ADMIN = 'SUPPORT_ADMIN',
+  USER = 'USER',
+}

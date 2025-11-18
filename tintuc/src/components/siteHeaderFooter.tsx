@@ -7,8 +7,6 @@ import { useEffect, useRef, useState } from "react";
 import { Search, Grid3X3, Heart, ChevronDown, Menu, X } from "lucide-react";
 import { Montserrat } from "next/font/google";
 import Image from "next/image";
-import logo3bow2 from "@/app/image/logo3bow-removebg-preview.png";
-
 import { Facebook, Youtube } from "lucide-react";
 import type { SVGProps } from "react";
 
@@ -157,19 +155,40 @@ function Header() {
       ].join(" ")}
     >
       <div className="mx-auto flex h-[72px] md:h-[88px] max-w-7xl items-center justify-between px-3 md:px-4">
-        {/* Logo */}
         <Link
           href="/"
-          className="flex items-center gap-3 min-w-[180px] md:min-w-[220px]"
+          className="flex flex-col justify-center items-center shrink-0 select-none group"
         >
-          <Image
-            src={logo3bow2}
-            alt="3BOW Digital"
-            priority
-            sizes="(min-width:1536px) 360px, (min-width:1280px) 320px, (min-width:1024px) 300px, (min-width:768px) 240px, 200px"
-            className="shrink-0 select-none object-contain w-auto h-[60px] sm:h-[70px] md:h-[100px] lg:h-[130px]"
-          />
+          <span
+            className={[
+              "font-bold", 
+              "tracking-tight", 
+              "leading-[0.9]",  
+              "text-[24px] md:text-[30px]", 
+              "transition-colors duration-300",
+              scrolled ? "text-gray-900" : "text-white",
+            ].join(" ")}
+          >
+            3BOW
+          </span>
+
+          {/* Dòng dưới: DIGITAL */}
+          <span
+            className={[
+              "font-bold uppercase", 
+              "text-[9px] md:text-[11.5px]", 
+              "tracking-[0.45em]", 
+              "ml-[1.5px]", 
+              "mt-[1px]", 
+              "transition-colors duration-300",
+              scrolled ? "text-gray-700" : "text-white/90",
+            ].join(" ")}
+          >
+            DIGITAL
+          </span>
         </Link>
+
+
 
         {/* Desktop menu */}
         <nav className="hidden lg:block">
